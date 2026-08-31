@@ -1,19 +1,22 @@
 import os
 import uvicorn
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
+
+BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
     title="Spinning & Pilates Galaxy Room",
     description="Sistema de reservas para Spinning y Pilates"
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
-    return FileResponse("index.html")
+    return FileResponse(BASE_DIR / "templates" / "index.html")
 
 @app.get("/clases")
 async def obtener_clases():
