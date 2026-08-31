@@ -268,6 +268,19 @@
             localStorage.setItem('reservas_spinning', JSON.stringify(reservas));
         }
 
+        // Consultar bicicletas ocupadas desde la API del backend
+        async function cargarBicicletasOcupadasAPI() {
+            try {
+                const res = await fetch('/api/reservas');
+                if (!res.ok) return [];
+                const data = await res.json();
+                return data.ocupadas || [];
+            } catch (err) {
+                console.error("Error al consultar API de reservas:", err);
+                return [];
+            }
+        }
+
         async function cargarBicis() {
             try {
                 const resBicis = await fetch('/bicicletas');
@@ -275,11 +288,14 @@
                 
                 const claseId = parseInt(document.getElementById('select-clase').value);
                 const fechaHoy = new Date().toISOString().split('T')[0];
+                
+                // Obtener ocupadas del almacenamiento local y de la API
                 const reservasLocales = obtenerReservasLocales();
+                const ocupadasAPI = await cargarBicicletasOcupadasAPI();
 
-                const bicisOcupadas = reservasLocales
+                const bicisOcupadasLocal = reservasLocales
                     .filter(r => r.clase_id === claseId && r.fecha_reserva === fechaHoy)
-                    .map(r => r.bici_id);
+                    .map(r => String(r.bici_id));
 
                 const contenedor = document.getElementById('mapa-bicis');
                 contenedor.innerHTML = '';
@@ -294,7 +310,8 @@
                 for (const [nombreFila, listaBicis] of Object.entries(filas)) {
                     let htmlFila = `<div class="text-center"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Fila ${nombreFila}</p><div class="flex justify-center gap-2 mb-3">`;
                     listaBicis.forEach(b => {
-                        const estaOcupada = bicisOcupadas.includes(b.id);
+                        const estaOcupada = bicisOcupadasLocal.includes(String(b.id)) || ocupadasAPI.includes(String(b.id)) || ocupadasAPI.includes(String(b.numero));
+                        
                         if (estaOcupada) {
                             htmlFila += `
                                 <button type="button" disabled class="bici-card ocupada w-11 h-11 rounded-xl flex flex-col items-center justify-center">
@@ -351,33 +368,44 @@
             };
 
             try {
-                const res = await fetch('/reservar', {
+                // Registrar reserva en la API
+                const resAPI = await fetch('/api/reservar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        bicicleta: String(biciSeleccionada),
+                        nombre: nombre,
+                        telefono: telefono
+                    })
                 });
 
-                if (res.ok) {
-                    const reservasLocales = obtenerReservasLocales();
-                    reservasLocales.push(payload);
-                    guardarReservasLocales(reservasLocales);
-
-                    alert('¡Reserva registrada! Te redirigiremos a WhatsApp para enviar tu comprobante.');
-                    const numeroAdmin = "523521234567"; 
-                    const mensajeWS = `Hola! Acabo de hacer una reserva en *Spinning Galaxy Room*:%0A%0A` +
-                                      `👤 *Nombre:* ${nombre}%0A` +
-                                      `📱 *Teléfono:* ${telefono}%0A` +
-                                      `🚴 *Bicicleta:* #${biciSeleccionada}%0A` +
-                                      `📅 *Clase:* ${claseTexto}%0A%0A` +
-                                      `⚠️ *Nota:* Recuerdo que tengo hasta 1 hora antes de la clase para cancelar sin cargo.`;
-
-                    window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
-                    location.reload();
-                } else {
-                    alert('Ocurrió un error al procesar la reserva.');
+                if (!resAPI.ok) {
+                    const errorData = await resAPI.json();
+                    alert(errorData.detail || 'La bicicleta seleccionada ya no está disponible.');
+                    cargarBicis();
+                    return;
                 }
+
+                // Guardar localmente para sincronizar la vista del cliente
+                const reservasLocales = obtenerReservasLocales();
+                reservasLocales.push(payload);
+                guardarReservasLocales(reservasLocales);
+
+                alert('¡Reserva registrada! Te redirigiremos a WhatsApp para enviar tu comprobante.');
+                const numeroAdmin = "523521234567"; 
+                const mensajeWS = `Hola! Acabo de hacer una reserva en *Spinning Galaxy Room*:%0A%0A` +
+                                  `👤 *Nombre:* ${nombre}%0A` +
+                                  `📱 *Teléfono:* ${telefono}%0A` +
+                                  `🚴 *Bicicleta:* #${biciSeleccionada}%0A` +
+                                  `📅 *Clase:* ${claseTexto}%0A%0A` +
+                                  `⚠️ *Nota:* Recuerdo que tengo hasta 1 hora antes de la clase para cancelar sin cargo.`;
+
+                window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                location.reload();
+
             } catch (err) {
                 alert('Error al conectar con el servidor.');
+                console.error(err);
             }
         }
 
