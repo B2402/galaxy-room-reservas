@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Room - Reservas</title>
+
+    <!-- Favicon Neón -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230B0F19' stroke='%2300E5FF' stroke-width='3'/><path d='M38 28 A 6 6 0 1 1 38 16 A 6 6 0 1 1 38 28 Z M32 32 L46 32 L58 48 L48 54 L38 40 L26 40 Z M22 65 C22 52, 34 42, 48 48 L62 38 L72 38' stroke='%2300E5FF' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='34' cy='66' r='12' stroke='%23A855F7' stroke-width='4' fill='none'/><circle cx='68' cy='66' r='12' stroke='%2300E5FF' stroke-width='4' fill='none'/></svg>">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            /* Fondo llamativo de Gimnasio / Sala de Indoor Cycling con Bicicletas */
+            background: linear-gradient(180deg, rgba(11, 15, 25, 0.88) 0%, rgba(5, 8, 16, 0.94) 100%), 
+                        url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #FFFFFF; 
+            font-family: system-ui, -apple-system, sans-serif; 
+            transition: background 0.4s ease-in-out;
+        }
+
+        body.bg-pilates-mode {
+            background: linear-gradient(180deg, rgba(20, 10, 30, 0.85) 0%, rgba(10, 5, 20, 0.92) 100%), 
+                        url('https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1920');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .glow-title { 
+            text-shadow: 0 0 12px #00E5FF, 0 0 24px #00E5FF, 0 0 36px #A855F7; 
+        }
+        .glow-pilates { 
+            text-shadow: 0 0 12px #C084FC, 0 0 24px #A855F7, 0 0 36px #E879F9; 
+        }
+
+        .bici-card { 
+            background: rgba(15, 23, 42, 0.9); 
+            border: 2px solid #1E293B; 
+            transition: all 0.2s ease-in-out; 
+        }
+
+        .bici-card:hover:not(:disabled) {
+            border-color: #00E5FF;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+        }
+
+        .bici-card.seleccionada { 
+            border-color: #00FF88; 
+            background: #064E3B; 
+            box-shadow: 0 0 14px #00FF88; 
+        }
+
+        .bici-card.ocupada {
+            background: #7f1d1d !important;
+            border-color: #ef4444 !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .input-dark {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #334155;
+            color: #FFFFFF;
+        }
+        .input-dark:focus {
+            border-color: #C084FC;
+            outline: none;
+            box-shadow: 0 0 8px rgba(192, 132, 252, 0.4);
+        }
+    </style>
+</head>
+<body class="p-4 max-w-md mx-auto min-h-screen flex flex-col justify-between">
+
+    <div>
+        <!-- MENÚ SUPERIOR DE SELECCIÓN DE SALA -->
+        <div class="w-full mb-4 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl p-3 shadow-xl flex items-center justify-between">
+            <label for="selectorSala" class="text-xs font-bold uppercase tracking-wider text-cyan-400">
+                Experiencia:
+            </label>
+            <select id="selectorSala" onchange="cambiarSeccion(this.value)" class="bg-slate-950 border border-cyan-500/50 text-cyan-300 px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none focus:border-cyan-400 cursor-pointer">
+                <option value="spinning">🚴‍♂️ Spinning Galaxy Room</option>
+                <option value="pilates">🧘‍♀️ Pilates Studio (NUEVO)</option>
+            </select>
+        </div>
+
+        <!-- ENCABEZADO CON LOGO DINÁMICO -->
+        <header class="text-center my-4 flex flex-col items-center">
+            <div id="contenedorLogo" class="w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300">
+                <!-- LOGO SPINNING SVG -->
+                <svg id="logoSpinning" class="w-16 h-16" viewBox="0 0 100 100">
+                    <circle cx="32" cy="66" r="14" stroke="#A855F7" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#A855F7]"/>
+                    <circle cx="68" cy="66" r="14" stroke="#00E5FF" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#00E5FF]"/>
+                    <circle cx="38" cy="22" r="5.5" fill="#00E5FF"/>
+                    <path d="M32 32 L46 32 L58 48 L48 54 L38 40 L26 40 M22 66 C24 50, 36 44, 48 48 L62 38 L72 38" 
+                          stroke="#00E5FF" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                          class="drop-shadow-[0_0_6px_#00E5FF]"/>
+                </svg>
+
+                <!-- LOGO PILATES IMAGEN -->
+                <img id="logoPilates" src="static/pilates-logo.jpeg" alt="Pilates Logo" class="w-full h-full object-cover rounded-full hidden">
+            </div>
+            
+            <h1 id="headerTitulo" class="text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider">Spinning Galaxy</h1>
+            <p class="text-xs text-purple-300 font-bold tracking-[0.2em] mt-1 uppercase">ROOM • LA PIEDAD</p>
+        </header>
+
+        <!-- VISTA SPINNING -->
+        <div id="vistaSpinning">
+            <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
+                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">1. Tus Datos</h2>
+                <div class="space-y-3">
+                    <input type="text" id="nombre" placeholder="Nombre completo" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white placeholder-slate-400">
+                    <input type="tel" id="telefono" placeholder="Teléfono (WhatsApp)" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white placeholder-slate-400">
+                </div>
+            </section>
+
+            <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
+                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">2. Selecciona tu Clase</h2>
+                <select id="select-clase" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
+                    <option value="">Cargando clases disponibles...</option>
+                </select>
+            </section>
+
+            <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
+                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">3. Elige tu Bici</h2>
+                <p class="text-[11px] text-slate-400 mb-4">Selecciona un lugar disponible</p>
+
+                <div class="w-full py-2 bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 text-center text-xs font-bold rounded-lg mb-6 uppercase tracking-widest shadow-inner">
+                    🎧 Tarima Coach / Escenario
+                </div>
+
+                <div id="mapa-bicis" class="space-y-4"></div>
+            </section>
+
+            <!-- ADVERTENCIA DE POLÍTICA DE CANCELACIÓN -->
+            <div class="bg-amber-950/60 border border-amber-500/50 p-3 rounded-xl mb-5 text-amber-200 text-xs flex items-start space-x-2">
+                <span class="text-base">⚠️</span>
+                <p>
+                    <strong>Aviso importante:</strong> En caso de requerir cancelación, debes realizarla con al menos <strong>1 hora de anticipación</strong> previa a la hora de tu cita. De lo contrario, la sesión será cobrada como si hubieras asistido.
+                </p>
+            </div>
+
+            <button onclick="confirmarReserva()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-cyan-500/30 transition-all uppercase tracking-wider mb-6">
+                Confirmar Reserva
+            </button>
+
+            <!-- SECCIÓN DE CANCELACIÓN DE RESERVAS DE SPINNING -->
+            <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-8 border border-red-900/50 shadow-2xl">
+                <h2 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <span>🚫</span> ¿Necesitas cancelar una reserva?
+                </h2>
+                <p class="text-[11px] text-slate-400 mb-3">
+                    Ingresa el número de teléfono con el que reservaste para gestionar tus reservas activas.
+                </p>
+                <div class="flex gap-2 mb-3">
+                    <input type="tel" id="telCancelar" placeholder="Tu número de WhatsApp" class="flex-1 bg-slate-800/90 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-red-400 text-white placeholder-slate-400">
+                    <button onclick="buscarReservasParaCancelar()" class="bg-red-600/80 hover:bg-red-500 text-white font-bold px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all">
+                        Buscar
+                    </button>
+                </div>
+                <div id="listaReservasCancelar" class="space-y-2 hidden"></div>
+            </section>
+        </div>
+
+        <!-- VISTA PILATES -->
+        <div id="vistaPilates" class="hidden">
+            <form id="formPilates" onsubmit="confirmarReservaPilates(event)" class="space-y-5 mb-8">
+                <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-3">
+                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">1. Datos Personales</h2>
+                    <input type="text" id="nombrePilates" required placeholder="Nombre completo" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+                    <input type="tel" id="telPilates" required placeholder="Teléfono (WhatsApp)" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Fecha de nacimiento:</label>
+                        <input type="date" id="fechaNacimientoPilates" required class="w-full p-3 rounded-lg input-dark text-sm">
+                    </div>
+                </section>
+
+                <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
+                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">2. Personaliza tu Sesión</h2>
+                    
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Fruta preferida:</label>
+                        <input type="text" id="fruta" placeholder="Escribe la fruta de tu preferencia" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Bebida hidratante:</label>
+                        <input type="text" id="bebida" placeholder="Escribe tu bebida hidratante preferida" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Personaje / Temática preferida:</label>
+                        <input type="text" id="personaje" placeholder="Escribe tu personaje o temática favorita" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+                    </div>
+                </section>
+
+                <button type="submit" class="w-full py-4 rounded-xl font-extrabold uppercase tracking-wider bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all">
+                    Reservar Lugar Pilates
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        let biciSeleccionada = null;
+        let listaClasesGlobal = [];
+
+        function cambiarSeccion(valor) {
+            const vistaSpinning = document.getElementById('vistaSpinning');
+            const vistaPilates = document.getElementById('vistaPilates');
+            const headerTitulo = document.getElementById('headerTitulo');
+            const logoSpinning = document.getElementById('logoSpinning');
+            const logoPilates = document.getElementById('logoPilates');
+            const contenedorLogo = document.getElementById('contenedorLogo');
+
+            if (valor === 'spinning') {
+                document.body.classList.remove('bg-pilates-mode');
+                vistaSpinning.classList.remove('hidden');
+                vistaPilates.classList.add('hidden');
+                
+                headerTitulo.innerText = "Spinning Galaxy";
+                headerTitulo.className = "text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider";
+
+                logoSpinning.classList.remove('hidden');
+                logoPilates.classList.add('hidden');
+                contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+            } else {
+                document.body.classList.add('bg-pilates-mode');
+                vistaSpinning.classList.add('hidden');
+                vistaPilates.classList.remove('hidden');
+                
+                headerTitulo.innerText = "Pilates Studio";
+                headerTitulo.className = "text-3xl font-black text-purple-400 glow-pilates uppercase tracking-wider";
+
+                logoSpinning.classList.add('hidden');
+                logoPilates.classList.remove('hidden');
+                contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-1 border-2 border-purple-400 shadow-xl shadow-purple-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+            }
+        }
+
+        async function cargarClases() {
+            try {
+                const res = await fetch('/clases');
+                const clases = await res.json();
+                listaClasesGlobal = clases;
+                const select = document.getElementById('select-clase');
+                select.innerHTML = '';
+                clases.forEach(c => {
+                    select.innerHTML += `<option value="${c.id}">${c.dia} - ${c.hora} | ${c.modalidad} (${c.coach})</option>`;
+                });
+                select.setAttribute("onchange", "cargarBicis()");
+                cargarBicis();
+            } catch (err) {
+                console.error("Error cargando clases:", err);
+            }
+        }
+
+        function obtenerReservasLocales() {
+            return JSON.parse(localStorage.getItem('reservas_spinning') || '[]');
+        }
+
+        function guardarReservasLocales(reservas) {
+            localStorage.setItem('reservas_spinning', JSON.stringify(reservas));
+        }
+
+        async function cargarBicis() {
+            try {
+                const resBicis = await fetch('/bicicletas');
+                const bicis = await resBicis.json();
+                
+                const claseId = parseInt(document.getElementById('select-clase').value);
+                const fechaHoy = new Date().toISOString().split('T')[0];
+                const reservasLocales = obtenerReservasLocales();
+
+                const bicisOcupadas = reservasLocales
+                    .filter(r => r.clase_id === claseId && r.fecha_reserva === fechaHoy)
+                    .map(r => r.bici_id);
+
+                const contenedor = document.getElementById('mapa-bicis');
+                contenedor.innerHTML = '';
+
+                biciSeleccionada = null;
+
+                const filas = { 'Frente': [], 'Centro': [], 'Atrás': [] };
+                bicis.forEach(b => {
+                    if (filas[b.fila]) filas[b.fila].push(b);
+                });
+
+                for (const [nombreFila, listaBicis] of Object.entries(filas)) {
+                    let htmlFila = `<div class="text-center"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Fila ${nombreFila}</p><div class="flex justify-center gap-2 mb-3">`;
+                    listaBicis.forEach(b => {
+                        const estaOcupada = bicisOcupadas.includes(b.id);
+                        if (estaOcupada) {
+                            htmlFila += `
+                                <button type="button" disabled class="bici-card ocupada w-11 h-11 rounded-xl flex flex-col items-center justify-center">
+                                    <span class="text-xs font-bold text-red-200">#${b.numero}</span>
+                                </button>
+                            `;
+                        } else {
+                            htmlFila += `
+                                <button type="button" onclick="seleccionarBici(${b.id})" id="bici-${b.id}" class="bici-card w-11 h-11 rounded-xl flex flex-col items-center justify-center">
+                                    <span class="text-xs font-bold">#${b.numero}</span>
+                                </button>
+                            `;
+                        }
+                    });
+                    htmlFila += `</div></div>`;
+                    contenedor.innerHTML += htmlFila;
+                }
+            } catch (err) {
+                console.error("Error cargando bicis:", err);
+            }
+        }
+
+        function seleccionarBici(id) {
+            document.querySelectorAll('.bici-card:not(.ocupada)').forEach(el => el.classList.remove('seleccionada'));
+            const btn = document.getElementById(`bici-${id}`);
+            if (btn) {
+                btn.classList.add('seleccionada');
+                biciSeleccionada = id;
+            }
+        }
+
+        async function confirmarReserva() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const selectClase = document.getElementById('select-clase');
+            const claseId = parseInt(selectClase.value);
+            const claseTexto = selectClase.options[selectClase.selectedIndex]?.text || '';
+
+            if (!nombre || !telefono || !biciSeleccionada) {
+                alert('Por favor ingresa tu nombre, teléfono y selecciona una bicicleta.');
+                return;
+            }
+
+            const fechaHoy = new Date().toISOString().split('T')[0];
+
+            const payload = {
+                id: Date.now(),
+                cliente_nombre: nombre,
+                cliente_telefono: telefono,
+                clase_id: claseId,
+                clase_texto: claseTexto,
+                bici_id: biciSeleccionada,
+                fecha_reserva: fechaHoy
+            };
+
+            try {
+                const res = await fetch('/reservar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const reservasLocales = obtenerReservasLocales();
+                    reservasLocales.push(payload);
+                    guardarReservasLocales(reservasLocales);
+
+                    alert('¡Reserva registrada! Te redirigiremos a WhatsApp para enviar tu comprobante.');
+                    const numeroAdmin = "523521234567"; 
+                    const mensajeWS = `Hola! Acabo de hacer una reserva en *Spinning Galaxy Room*:%0A%0A` +
+                                      `👤 *Nombre:* ${nombre}%0A` +
+                                      `📱 *Teléfono:* ${telefono}%0A` +
+                                      `🚴 *Bicicleta:* #${biciSeleccionada}%0A` +
+                                      `📅 *Clase:* ${claseTexto}%0A%0A` +
+                                      `⚠️ *Nota:* Recuerdo que tengo hasta 1 hora antes de la clase para cancelar sin cargo.`;
+
+                    window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                    location.reload();
+                } else {
+                    alert('Ocurrió un error al procesar la reserva.');
+                }
+            } catch (err) {
+                alert('Error al conectar con el servidor.');
+            }
+        }
+
+        function obtenerFechaHoraClase(horaStr) {
+            const ahora = new Date();
+            const partes = horaStr.trim().split(" ");
+            const tiempo = partes[0].split(":");
+            let horas = parseInt(tiempo[0]);
+            const minutos = parseInt(tiempo[1]);
+            const ampm = partes[1];
+
+            if (ampm === "PM" && horas < 12) horas += 12;
+            if (ampm === "AM" && horas === 12) horas = 0;
+
+            const fechaClase = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), horas, minutos, 0);
+            return fechaClase;
+        }
+
+        function buscarReservasParaCancelar() {
+            const tel = document.getElementById('telCancelar').value.trim();
+            const listaDiv = document.getElementById('listaReservasCancelar');
+            
+            if (!tel) {
+                alert('Por favor ingresa tu número telefónico.');
+                return;
+            }
+
+            const reservasLocales = obtenerReservasLocales();
+            const misReservas = reservasLocales.filter(r => r.cliente_telefono === tel);
+
+            listaDiv.innerHTML = '';
+            listaDiv.classList.remove('hidden');
+
+            if (misReservas.length === 0) {
+                listaDiv.innerHTML = `<p class="text-xs text-slate-400">No se encontraron reservas registradas con ese número.</p>`;
+                return;
+            }
+
+            misReservas.forEach(r => {
+                listaDiv.innerHTML += `
+                    <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700">
+                        <div>
+                            <p class="text-xs font-bold text-white">Bici #${r.bici_id} - ${r.clase_texto}</p>
+                            <p class="text-[10px] text-slate-400">Fecha: ${r.fecha_reserva}</p>
+                        </div>
+                        <button onclick="cancelarReserva(${r.id})" class="bg-red-600/90 hover:bg-red-500 text-white font-bold px-3 py-1.5 rounded text-xs transition-all">
+                            Cancelar
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function cancelarReserva(reservaId) {
+            const reservasLocales = obtenerReservasLocales();
+            const reserva = reservasLocales.find(r => r.id === reservaId);
+
+            if (!reserva) {
+                alert('Reserva no encontrada.');
+                return;
+            }
+
+            const claseInfo = listaClasesGlobal.find(c => c.id === reserva.clase_id);
+            if (claseInfo) {
+                const horaClase = obtenerFechaHoraClase(claseInfo.hora);
+                const ahora = new Date();
+                const diferenciaMs = horaClase - ahora;
+                const diferenciaHoras = diferenciaMs / (1000 * 60 * 60);
+
+                if (diferenciaHoras < 1) {
+                    alert('⚠️ Ya no es posible cancelar esta cita de manera gratuita porque falta menos de 1 hora para su inicio. Se te cobrará como si hubieras asistido.');
+                    return;
+                }
+            }
+
+            if (confirm('¿Estás seguro de que deseas cancelar esta reserva? Tu bicicleta volverá a estar disponible.')) {
+                const nuevasReservas = reservasLocales.filter(r => r.id !== reservaId);
+                guardarReservasLocales(nuevasReservas);
+
+                const numeroAdmin = "523521234567";
+                const mensajeWS = `Hola! Vengo a CANCELAR mi reserva en *Spinning Galaxy Room*:%0A%0A` +
+                                  `👤 *Nombre:* ${reserva.cliente_nombre}%0A` +
+                                  `📱 *Teléfono:* ${reserva.cliente_telefono}%0A` +
+                                  `🚴 *Bicicleta liberada:* #${reserva.bici_id}%0A` +
+                                  `📅 *Clase:* ${reserva.clase_texto}`;
+
+                alert('Tu reserva ha sido cancelada exitosamente y la bicicleta ha quedado disponible nuevamente.');
+                window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                
+                cargarBicis();
+                buscarReservasParaCancelar();
+            }
+        }
+
+        async function confirmarReservaPilates(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombrePilates').value.trim();
+            const telefono = document.getElementById('telPilates').value.trim();
+            const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
+            const fruta = document.getElementById('fruta').value.trim();
+            const bebida = document.getElementById('bebida').value.trim();
+            const personaje = document.getElementById('personaje').value.trim();
+
+            const payload = {
+                cliente_nombre: nombre,
+                cliente_telefono: telefono,
+                fecha_nacimiento: fechaNacimiento,
+                fruta: fruta,
+                bebida: bebida,
+                personaje: personaje,
+                fecha_reserva: new Date().toISOString().split('T')[0]
+            };
+
+            try {
+                const res = await fetch('/reservar/pilates', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert(`¡Reserva de Pilates confirmada para ${nombre}!`);
+                    const numeroAdmin = "523521234567";
+                    const mensajeWS = `Hola! Acabo de hacer una reserva en *Pilates Studio*:%0A%0A` +
+                                      `👤 *Nombre:* ${nombre}%0A` +
+                                      `📱 *Teléfono:* ${telefono}%0A` +
+                                      `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}%0A` +
+                                      `🍓 *Fruta:* ${fruta || 'Sin preferencia'}%0A` +
+                                      `🥤 *Bebida:* ${bebida || 'Sin preferencia'}%0A` +
+                                      `🎨 *Temática:* ${personaje || 'Sin preferencia'}`;
+
+                    window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                    location.reload();
+                } else {
+                    alert('Ocurrió un error al procesar la reserva de Pilates.');
+                }
+            } catch (err) {
+                alert('Error al conectar con el servidor.');
+            }
+        }
+
+        cargarClases();
+    </script>
+</body>
+</html>
