@@ -18,7 +18,6 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # Estructura de datos temporal en memoria para almacenar las reservas
-# Estructura: {"1": {"nombre": "Brayan", "telefono": "3350420050"}}
 reservas_db: Dict[str, Dict[str, str]] = {}
 
 class ReservaSchema(BaseModel):
@@ -47,6 +46,22 @@ async def registrar_reserva(reserva: ReservaSchema):
         "telefono": reserva.telefono
     }
     return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
+
+@app.get("/bicicletas")
+async def obtener_bicicletas():
+    """Devuelve las 10 bicicletas organizadas por fila."""
+    return [
+        {"id": 1, "numero": 1, "fila": "Frente"},
+        {"id": 2, "numero": 2, "fila": "Frente"},
+        {"id": 3, "numero": 3, "fila": "Frente"},
+        {"id": 4, "numero": 4, "fila": "Centro"},
+        {"id": 5, "numero": 5, "fila": "Centro"},
+        {"id": 6, "numero": 6, "fila": "Centro"},
+        {"id": 7, "numero": 7, "fila": "Atrás"},
+        {"id": 8, "numero": 8, "fila": "Atrás"},
+        {"id": 9, "numero": 9, "fila": "Atrás"},
+        {"id": 10, "numero": 10, "fila": "Atrás"}
+    ]
 
 @app.get("/clases")
 async def obtener_clases():
