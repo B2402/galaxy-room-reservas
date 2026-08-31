@@ -11,7 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
-            /* Fondo llamativo de Gimnasio / Sala de Indoor Cycling con Bicicletas */
             background: linear-gradient(180deg, rgba(11, 15, 25, 0.88) 0%, rgba(5, 8, 16, 0.94) 100%), 
                         url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920');
             background-size: cover;
@@ -90,7 +89,6 @@
         <!-- ENCABEZADO CON LOGO DINÁMICO -->
         <header class="text-center my-4 flex flex-col items-center">
             <div id="contenedorLogo" class="w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300">
-                <!-- LOGO SPINNING SVG -->
                 <svg id="logoSpinning" class="w-16 h-16" viewBox="0 0 100 100">
                     <circle cx="32" cy="66" r="14" stroke="#A855F7" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#A855F7]"/>
                     <circle cx="68" cy="66" r="14" stroke="#00E5FF" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#00E5FF]"/>
@@ -99,8 +97,6 @@
                           stroke="#00E5FF" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"
                           class="drop-shadow-[0_0_6px_#00E5FF]"/>
                 </svg>
-
-                <!-- LOGO PILATES IMAGEN -->
                 <img id="logoPilates" src="/static/pilates-logo.jpeg" alt="Pilates Logo" class="w-full h-full object-cover rounded-full hidden">
             </div>
             
@@ -136,7 +132,6 @@
                 <div id="mapa-bicis" class="space-y-4"></div>
             </section>
 
-            <!-- ADVERTENCIA DE POLÍTICA DE CANCELACIÓN -->
             <div class="bg-amber-950/60 border border-amber-500/50 p-3 rounded-xl mb-5 text-amber-200 text-xs flex items-start space-x-2">
                 <span class="text-base">⚠️</span>
                 <p>
@@ -148,7 +143,6 @@
                 Confirmar Reserva
             </button>
 
-            <!-- SECCIÓN DE CANCELACIÓN DE RESERVAS DE SPINNING -->
             <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-8 border border-red-900/50 shadow-2xl">
                 <h2 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                     <span>🚫</span> ¿Necesitas cancelar una reserva?
@@ -268,7 +262,6 @@
             localStorage.setItem('reservas_spinning', JSON.stringify(reservas));
         }
 
-        // Consultar bicicletas ocupadas desde la API del backend
         async function cargarBicicletasOcupadasAPI() {
             try {
                 const res = await fetch('/api/reservas');
@@ -284,12 +277,30 @@
         async function cargarBicis() {
             try {
                 const resBicis = await fetch('/bicicletas');
-                const bicis = await resBicis.json();
-                
+                let bicis = [];
+                if (resBicis.ok) {
+                    bicis = await resBicis.json();
+                }
+
+                // Respaldo dinámico si la respuesta viene vacía
+                if (!bicis || bicis.length === 0) {
+                    bicis = [
+                        { id: 1, numero: 1, fila: "Frente" },
+                        { id: 2, numero: 2, fila: "Frente" },
+                        { id: 3, numero: 3, fila: "Frente" },
+                        { id: 4, numero: 4, fila: "Centro" },
+                        { id: 5, numero: 5, fila: "Centro" },
+                        { id: 6, numero: 6, fila: "Centro" },
+                        { id: 7, numero: 7, fila: "Atrás" },
+                        { id: 8, numero: 8, fila: "Atrás" },
+                        { id: 9, numero: 9, fila: "Atrás" },
+                        { id: 10, numero: 10, fila: "Atrás" }
+                    ];
+                }
+
                 const claseId = parseInt(document.getElementById('select-clase').value);
                 const fechaHoy = new Date().toISOString().split('T')[0];
                 
-                // Obtener ocupadas del almacenamiento local y de la API
                 const reservasLocales = obtenerReservasLocales();
                 const ocupadasAPI = await cargarBicicletasOcupadasAPI();
 
@@ -302,9 +313,11 @@
 
                 biciSeleccionada = null;
 
-                const filas = { 'Frente': [], 'Centro': [], 'Atrás': [] };
+                const filas = {};
                 bicis.forEach(b => {
-                    if (filas[b.fila]) filas[b.fila].push(b);
+                    const nombreFila = b.fila || 'General';
+                    if (!filas[nombreFila]) filas[nombreFila] = [];
+                    filas[nombreFila].push(b);
                 });
 
                 for (const [nombreFila, listaBicis] of Object.entries(filas)) {
@@ -315,13 +328,13 @@
                         if (estaOcupada) {
                             htmlFila += `
                                 <button type="button" disabled class="bici-card ocupada w-11 h-11 rounded-xl flex flex-col items-center justify-center">
-                                    <span class="text-xs font-bold text-red-200">#${b.numero}</span>
+                                    <span class="text-xs font-bold text-red-200">#${b.numero || b.id}</span>
                                 </button>
                             `;
                         } else {
                             htmlFila += `
                                 <button type="button" onclick="seleccionarBici(${b.id})" id="bici-${b.id}" class="bici-card w-11 h-11 rounded-xl flex flex-col items-center justify-center">
-                                    <span class="text-xs font-bold">#${b.numero}</span>
+                                    <span class="text-xs font-bold">#${b.numero || b.id}</span>
                                 </button>
                             `;
                         }
@@ -368,7 +381,6 @@
             };
 
             try {
-                // Registrar reserva en la API
                 const resAPI = await fetch('/api/reservar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -386,7 +398,6 @@
                     return;
                 }
 
-                // Guardar localmente para sincronizar la vista del cliente
                 const reservasLocales = obtenerReservasLocales();
                 reservasLocales.push(payload);
                 guardarReservasLocales(reservasLocales);
@@ -420,8 +431,7 @@
             if (ampm === "PM" && horas < 12) horas += 12;
             if (ampm === "AM" && horas === 12) horas = 0;
 
-            const fechaClase = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), horas, minutos, 0);
-            return fechaClase;
+            return new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), horas, minutos, 0);
         }
 
         function buscarReservasParaCancelar() {
@@ -551,3 +561,9 @@
     </script>
 </body>
 </html>
+
+    
+
+         
+
+                   
