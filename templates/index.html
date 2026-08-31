@@ -204,6 +204,10 @@
         let biciSeleccionada = null;
         let listaClasesGlobal = [];
 
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarClases();
+        });
+
         function cambiarSeccion(valor) {
             const vistaSpinning = document.getElementById('vistaSpinning');
             const vistaPilates = document.getElementById('vistaPilates');
@@ -302,7 +306,8 @@
                     ];
                 }
 
-                const claseId = parseInt(document.getElementById('select-clase').value);
+                const selectClase = document.getElementById('select-clase');
+                const claseId = selectClase ? parseInt(selectClase.value) : null;
                 const fechaHoy = new Date().toISOString().split('T')[0];
                 
                 const reservasLocales = obtenerReservasLocales();
@@ -317,7 +322,6 @@
 
                 biciSeleccionada = null;
 
-                // Definir orden exacto de las filas
                 const ordenFilas = ["Frente", "Centro", "Atrás"];
                 const filas = { "Frente": [], "Centro": [], "Atrás": [] };
 
@@ -482,7 +486,7 @@
             });
         }
 
-        function cancelarReserva(reservaId) {
+        async function cancelarReserva(reservaId) {
             const reservasLocales = obtenerReservasLocales();
             const reserva = reservasLocales.find(r => r.id === reservaId);
 
@@ -505,6 +509,16 @@
             }
 
             if (confirm('¿Estás seguro de que deseas cancelar esta reserva? Tu bicicleta volverá a estar disponible.')) {
+                try {
+                    await fetch('/api/cancelar', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ bicicleta: String(reserva.bici_id) })
+                    });
+                } catch (e) {
+                    console.error("No se pudo notificar al servidor la cancelación:", e);
+                }
+
                 const nuevasReservas = reservasLocales.filter(r => r.id !== reservaId);
                 guardarReservasLocales(nuevasReservas);
 
@@ -533,48 +547,39 @@
             const personaje = document.getElementById('personaje').value.trim();
 
             const payload = {
-                cliente_nombre: nombre,
-                cliente_telefono: telefono,
+                nombre: nombre,
+                telefono: telefono,
                 fecha_nacimiento: fechaNacimiento,
                 fruta: fruta,
                 bebida: bebida,
-                personaje: personaje,
-                fecha_reserva: new Date().toISOString().split('T')[0]
+                personaje: personaje
             };
 
             try {
-                const res = await fetch('/reservar/pilates', {
+                await fetch('/api/pilates/reservar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
 
-                if (res.ok) {
-                    alert(`¡Reserva de Pilates confirmada para ${nombre}!`);
-                    const numeroAdmin = "523521234567";
-                    const mensajeWS = `Hola! Acabo de hacer una reserva en *Pilates Studio*:%0A%0A` +
-                                      `👤 *Nombre:* ${nombre}%0A` +
-                                      `📱 *Teléfono:* ${telefono}%0A` +
-                                      `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}%0A` +
-                                      `🍓 *Fruta:* ${fruta || 'Sin preferencia'}%0A` +
-                                      `🥤 *Bebida:* ${bebida || 'Sin preferencia'}%0A` +
-                                      `🎨 *Temática:* ${personaje || 'Sin preferencia'}`;
+                alert('¡Reserva de Pilates completada! Redirigiendo a WhatsApp...');
 
-                    window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
-                    location.reload();
-                } else {
-                    alert('Ocurrió un error al procesar la reserva de Pilates.');
-                }
+                const numeroAdmin = "523521234567";
+                const mensajeWS = `Hola! Acabo de realizar una reserva para *Pilates Studio*:%0A%0A` +
+                                  `👤 *Nombre:* ${nombre}%0A` +
+                                  `📱 *Teléfono:* ${telefono}%0A` +
+                                  `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}%0A` +
+                                  `🍎 *Fruta preferida:* ${fruta || 'N/A'}%0A` +
+                                  `🥤 *Bebida preferida:* ${bebida || 'N/A'}%0A` +
+                                  `🌟 *Personaje/Temática:* ${personaje || 'N/A'}`;
+
+                window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                document.getElementById('formPilates').reset();
             } catch (err) {
-                alert('Error al conectar con el servidor.');
+                alert('Ocurrió un error al guardar la reserva de Pilates.');
+                console.error(err);
             }
         }
-
-        cargarClases();
     </script>
 </body>
 </html>
-
-         
-
-                   
