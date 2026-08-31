@@ -276,18 +276,22 @@
 
         async function cargarBicis() {
             try {
-                const resBicis = await fetch('/bicicletas');
                 let bicis = [];
-                if (resBicis.ok) {
-                    bicis = await resBicis.json();
+                try {
+                    const resBicis = await fetch('/bicicletas');
+                    if (resBicis.ok) {
+                        bicis = await resBicis.json();
+                    }
+                } catch (e) {
+                    console.log("Servidor no respondió /bicicletas, usando respaldo predeterminado");
                 }
 
-                // Respaldo dinámico si la respuesta viene vacía
+                // Respaldo de 10 bicis: 2 Frente, 4 Centro, 4 Atrás
                 if (!bicis || bicis.length === 0) {
                     bicis = [
                         { id: 1, numero: 1, fila: "Frente" },
                         { id: 2, numero: 2, fila: "Frente" },
-                        { id: 3, numero: 3, fila: "Frente" },
+                        { id: 3, numero: 3, fila: "Centro" },
                         { id: 4, numero: 4, fila: "Centro" },
                         { id: 5, numero: 5, fila: "Centro" },
                         { id: 6, numero: 6, fila: "Centro" },
@@ -313,35 +317,44 @@
 
                 biciSeleccionada = null;
 
-                const filas = {};
+                // Definir orden exacto de las filas
+                const ordenFilas = ["Frente", "Centro", "Atrás"];
+                const filas = { "Frente": [], "Centro": [], "Atrás": [] };
+
                 bicis.forEach(b => {
-                    const nombreFila = b.fila || 'General';
-                    if (!filas[nombreFila]) filas[nombreFila] = [];
-                    filas[nombreFila].push(b);
+                    const f = b.fila || "Centro";
+                    if (filas[f]) {
+                        filas[f].push(b);
+                    } else {
+                        filas["Centro"].push(b);
+                    }
                 });
 
-                for (const [nombreFila, listaBicis] of Object.entries(filas)) {
-                    let htmlFila = `<div class="text-center"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Fila ${nombreFila}</p><div class="flex justify-center gap-2 mb-3">`;
-                    listaBicis.forEach(b => {
-                        const estaOcupada = bicisOcupadasLocal.includes(String(b.id)) || ocupadasAPI.includes(String(b.id)) || ocupadasAPI.includes(String(b.numero));
-                        
-                        if (estaOcupada) {
-                            htmlFila += `
-                                <button type="button" disabled class="bici-card ocupada w-11 h-11 rounded-xl flex flex-col items-center justify-center">
-                                    <span class="text-xs font-bold text-red-200">#${b.numero || b.id}</span>
-                                </button>
-                            `;
-                        } else {
-                            htmlFila += `
-                                <button type="button" onclick="seleccionarBici(${b.id})" id="bici-${b.id}" class="bici-card w-11 h-11 rounded-xl flex flex-col items-center justify-center">
-                                    <span class="text-xs font-bold">#${b.numero || b.id}</span>
-                                </button>
-                            `;
-                        }
-                    });
-                    htmlFila += `</div></div>`;
-                    contenedor.innerHTML += htmlFila;
-                }
+                ordenFilas.forEach(nombreFila => {
+                    const listaBicis = filas[nombreFila];
+                    if (listaBicis.length > 0) {
+                        let htmlFila = `<div class="text-center"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Fila ${nombreFila}</p><div class="flex justify-center gap-2 mb-3">`;
+                        listaBicis.forEach(b => {
+                            const estaOcupada = bicisOcupadasLocal.includes(String(b.id)) || ocupadasAPI.includes(String(b.id)) || ocupadasAPI.includes(String(b.numero));
+                            
+                            if (estaOcupada) {
+                                htmlFila += `
+                                    <button type="button" disabled class="bici-card ocupada w-11 h-11 rounded-xl flex flex-col items-center justify-center">
+                                        <span class="text-xs font-bold text-red-200">#${b.numero || b.id}</span>
+                                    </button>
+                                `;
+                            } else {
+                                htmlFila += `
+                                    <button type="button" onclick="seleccionarBici(${b.id})" id="bici-${b.id}" class="bici-card w-11 h-11 rounded-xl flex flex-col items-center justify-center">
+                                        <span class="text-xs font-bold">#${b.numero || b.id}</span>
+                                    </button>
+                                `;
+                            }
+                        });
+                        htmlFila += `</div></div>`;
+                        contenedor.innerHTML += htmlFila;
+                    }
+                });
             } catch (err) {
                 console.error("Error cargando bicis:", err);
             }
@@ -561,8 +574,6 @@
     </script>
 </body>
 </html>
-
-    
 
          
 
