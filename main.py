@@ -1,9 +1,11 @@
 import os
 import uvicorn
 from pathlib import Path
-from fastapi import FastAPI
+from typing import List, Dict, Any
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
+from pydantic import BaseModel
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -12,11 +14,39 @@ app = FastAPI(
     description="Sistema de reservas para Spinning y Pilates"
 )
 
+# Servir archivos estáticos
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
+# Estructura de datos temporal en memoria para almacenar las reservas
+# Estructura: {"1": {"nombre": "Brayan", "telefono": "3350420050"}}
+reservas_db: Dict[str, Dict[str, str]] = {}
+
+class ReservaSchema(BaseModel):
+    bicicleta: str
+    nombre: str
+    telefono: str
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
     return FileResponse(BASE_DIR / "templates" / "index.html")
+
+@app.get("/api/reservas")
+async def obtener_reservas():
+    """Devuelve la lista de IDs de bicicletas que ya han sido reservadas."""
+    return {"ocupadas": list(reservas_db.keys())}
+
+@app.post("/api/reservar")
+async def registrar_reserva(reserva: ReservaSchema):
+    """Registra una nueva reserva si la bicicleta está disponible."""
+    bici_id = str(reserva.bicicleta).strip()
+    if bici_id in reservas_db:
+        raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada.")
+    
+    reservas_db[bici_id] = {
+        "nombre": reserva.nombre,
+        "telefono": reserva.telefono
+    }
+    return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
 
 @app.get("/clases")
 async def obtener_clases():
@@ -30,39 +60,7 @@ async def obtener_clases():
         {"id": 7, "dia": "Martes", "hora": "07:15 PM", "modalidad": "Flow", "coach": "Coquis"},
         {"id": 8, "dia": "Miércoles", "hora": "05:15 PM", "modalidad": "Flow", "coach": "Principiantes"},
         {"id": 9, "dia": "Miércoles", "hora": "06:15 PM", "modalidad": "Power", "coach": "Mayra"},
-        {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "Power", "coach": "Omar Loeza"},
+        {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "Power", "coach": "Omar"},
         {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Power", "coach": "Coquis"},
-        {"id": 12, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Power", "coach": "Coquis"},
-        {"id": 13, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Power", "coach": "Mayra"},
-        {"id": 14, "dia": "Viernes", "hora": "07:15 PM", "modalidad": "TEMATICA", "coach": "Especial"}
+        {"id": 12, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Power", "coach": "Coquis"}
     ]
-
-@app.get("/bicicletas")
-async def obtener_bicicletas():
-    return [
-        {"id": 1, "numero": 1, "fila": "Frente"},
-        {"id": 2, "numero": 2, "fila": "Frente"},
-        {"id": 3, "numero": 3, "fila": "Centro"},
-        {"id": 4, "numero": 4, "fila": "Centro"},
-        {"id": 5, "numero": 5, "fila": "Centro"},
-        {"id": 6, "numero": 6, "fila": "Centro"},
-        {"id": 7, "numero": 7, "fila": "Atrás"},
-        {"id": 8, "numero": 8, "fila": "Atrás"},
-        {"id": 9, "numero": 9, "fila": "Atrás"},
-        {"id": 10, "numero": 10, "fila": "Atrás"}
-    ]
-
-@app.post("/reservar")
-async def reservar_spinning(datos: dict):
-    print("Reserva Spinning:", datos)
-    return {"status": "ok", "mensaje": "Reserva de Spinning confirmada"}
-
-@app.post("/reservar/pilates")
-async def reservar_pilates(datos: dict):
-    print("Reserva Pilates:", datos)
-    return {"status": "ok", "mensaje": "Reserva de Pilates registrada con éxito"}
-
-# Bloque para producción en servidor
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
