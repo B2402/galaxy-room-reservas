@@ -1,7 +1,7 @@
 import os
 import uvicorn
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
@@ -19,11 +19,23 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # Estructura de datos temporal en memoria para almacenar las reservas
 reservas_db: Dict[str, Dict[str, str]] = {}
+reservas_pilates_db: List[Dict[str, Any]] = []
 
 class ReservaSchema(BaseModel):
     bicicleta: str
     nombre: str
     telefono: str
+
+class CancelarReservaSchema(BaseModel):
+    bicicleta: str
+
+class ReservaPilatesSchema(BaseModel):
+    nombre: str
+    telefono: str
+    fecha_nacimiento: str
+    fruta: Optional[str] = ""
+    bebida: Optional[str] = ""
+    personaje: Optional[str] = ""
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
@@ -46,6 +58,22 @@ async def registrar_reserva(reserva: ReservaSchema):
         "telefono": reserva.telefono
     }
     return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
+
+@app.post("/api/cancelar")
+async def cancelar_reserva(data: CancelarReservaSchema):
+    """Libera una bicicleta previamente reservada en el servidor."""
+    bici_id = str(data.bicicleta).strip()
+    if bici_id in reservas_db:
+        del reservas_db[bici_id]
+        return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} liberada exitosamente."}
+    return {"status": "ok", "mensaje": "La bicicleta no estaba registrada en el servidor."}
+
+@app.post("/api/pilates/reservar")
+async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
+    """Registra la reserva para la sesión de Pilates Studio."""
+    nueva_reserva = reserva.dict()
+    reservas_pilates_db.append(nueva_reserva)
+    return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
 
 @app.get("/bicicletas")
 async def obtener_bicicletas():
@@ -81,3 +109,6 @@ async def obtener_clases():
         {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Power", "coach": "Coquis"},
         {"id": 12, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Power", "coach": "Coquis"}
     ]
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
