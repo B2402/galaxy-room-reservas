@@ -297,11 +297,11 @@
                     bicis = [
                         { id: 1, numero: 1, fila: "Frente" },
                         { id: 2, numero: 2, fila: "Frente" },
-                        { id: 3, numero: 3, fila: "Centro" },
+                        { id: 3, numero: 3, fila: "Frente" },
                         { id: 4, numero: 4, fila: "Centro" },
                         { id: 5, numero: 5, fila: "Centro" },
                         { id: 6, numero: 6, fila: "Centro" },
-                        { id: 7, numero: 7, fila: "Atrás" },
+                        { id: 7, numero: 7, fila: "Centro" },
                         { id: 8, numero: 8, fila: "Atrás" },
                         { id: 9, numero: 9, fila: "Atrás" },
                         { id: 10, numero: 10, fila: "Atrás" }
@@ -435,12 +435,12 @@
 
                 alert(`¡Bicicleta #${numBiciReserva} reservada con éxito! Te redirigiremos a WhatsApp.`);
                 
-                const numeroAdmin = "523521234567"; 
+                const numeroAdmin = "523521254602"; 
                 const mensajeWS = `Hola! Acabo de hacer una reserva en *Spinning Galaxy Room*:%0A%0A` +
-                                  `👤 *Nombre:* ${encodeURIComponent(nombre)}%0A` +
-                                  `📱 *Teléfono:* ${encodeURIComponent(telefono)}%0A` +
-                                  `🚴 *Bicicleta Reservada:* #${numBiciReserva}%0A` +
-                                  `📅 *Clase:* ${encodeURIComponent(claseTexto)}%0A%0A` +
+                                  `❖ *Nombre:* ${encodeURIComponent(nombre)}%0A` +
+                                  `❖ *Teléfono:* ${encodeURIComponent(telefono)}%0A` +
+                                  `❖ *Bicicleta Reservada:* ${numBiciReserva}%0A` +
+                                  `❖ *Clase:* ${encodeURIComponent(claseTexto)}%0A%0A` +
                                   `⚠️ *Nota:* Recuerdo que tengo hasta 1 hora antes de la clase para cancelar sin cargo.`;
 
                 window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
@@ -539,10 +539,10 @@
 
                 const numeroAdmin = "523521254602";
                 const mensajeWS = `Hola! Vengo a CANCELAR mi reserva en *Spinning Galaxy Room*:%0A%0A` +
-                                  `👤 *Nombre:* ${encodeURIComponent(reserva.cliente_nombre)}%0A` +
-                                  `📱 *Teléfono:* ${encodeURIComponent(reserva.cliente_telefono)}%0A` +
-                                  `🚴 *Bicicleta liberada:* #${reserva.bici_id}%0A` +
-                                  `📅 *Clase:* ${encodeURIComponent(reserva.clase_texto)}`;
+                                  `❖ *Nombre:* ${encodeURIComponent(reserva.cliente_nombre)}%0A` +
+                                  `❖ *Teléfono:* ${encodeURIComponent(reserva.cliente_telefono)}%0A` +
+                                  `❖ *Bicicleta liberada:* ${reserva.bici_id}%0A` +
+                                  `❖ *Clase:* ${encodeURIComponent(reserva.clase_texto)}`;
 
                 alert('Tu reserva ha sido cancelada exitosamente y la bicicleta ha quedado disponible nuevamente.');
                 window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
@@ -579,7 +579,7 @@
 
                 alert('¡Reserva de Pilates completada! Redirigiendo a WhatsApp...');
 
-                const numeroAdmin = "523521234567";
+                const numeroAdmin = "523521254602";
                 const mensajeWS = `Hola! Acabo de realizar una reserva para *Pilates Studio*:%0A%0A` +
                                   `👤 *Nombre:* ${encodeURIComponent(nombre)}%0A` +
                                   `📱 *Teléfono:* ${encodeURIComponent(telefono)}%0A` +
