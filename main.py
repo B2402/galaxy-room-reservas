@@ -77,17 +77,17 @@ async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
 
 @app.get("/bicicletas")
 async def obtener_bicicletas():
-    """Devuelve las 10 bicicletas distribuidas: 2 al frente, 4 al centro, 4 atrás."""
+    """Devuelve las bicicletas distribuidas originalmente."""
     return [
         {"id": 1, "numero": 1, "fila": "Frente"},
         {"id": 2, "numero": 2, "fila": "Frente"},
+        {"id": 3, "numero": 3, "fila": "Frente"},
         
-        {"id": 3, "numero": 3, "fila": "Centro"},
         {"id": 4, "numero": 4, "fila": "Centro"},
         {"id": 5, "numero": 5, "fila": "Centro"},
         {"id": 6, "numero": 6, "fila": "Centro"},
+        {"id": 7, "numero": 7, "fila": "Centro"},
         
-        {"id": 7, "numero": 7, "fila": "Atrás"},
         {"id": 8, "numero": 8, "fila": "Atrás"},
         {"id": 9, "numero": 9, "fila": "Atrás"},
         {"id": 10, "numero": 10, "fila": "Atrás"}
@@ -112,4 +112,3 @@ async def obtener_clases():
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
