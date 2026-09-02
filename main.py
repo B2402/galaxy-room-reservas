@@ -43,7 +43,7 @@ async def read_index():
 
 @app.get("/api/reservas")
 async def obtener_reservas():
-    """Devuelve la lista de IDs de bicicletas que ya han sido reservadas."""
+    """Devuelve la lista de IDs de bicicletas reservadas."""
     return {"ocupadas": list(reservas_db.keys())}
 
 @app.post("/api/reservar")
@@ -112,3 +112,4 @@ async def obtener_clases():
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
