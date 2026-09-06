@@ -115,10 +115,21 @@
             </section>
 
             <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
-                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">2. Selecciona tu Clase</h2>
-                <select id="select-clase" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
-                    <option value="">Cargando clases disponibles...</option>
-                </select>
+                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">2. Selecciona tu Clase y Modalidad</h2>
+                <div class="space-y-3">
+                    <select id="select-clase" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
+                        <option value="">Cargando clases disponibles...</option>
+                    </select>
+
+                    <div>
+                        <label class="text-[11px] text-slate-400 font-bold uppercase block mb-1">Modalidad de Pago:</label>
+                        <select id="select-modalidad-spinning" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
+                            <option value="Clase Individual ($50 MXN)">💳 Clase Individual — $50 MXN</option>
+                            <option value="Mensualidad Promo 3+1 ($500 MXN)">🔥 Mensualidad Promo (3+1 clases/semana) — $500 MXN</option>
+                            <option value="Mensualidad Ilimitada ($700 MXN)">⭐ Mensualidad Ilimitada — $700 MXN</option>
+                        </select>
+                    </div>
+                </div>
             </section>
 
             <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
@@ -133,6 +144,27 @@
                 </div>
 
                 <div id="mapa-bicis" class="space-y-4"></div>
+            </section>
+
+            <!-- DATOS BANCARIOS Y COMPROBANTE -->
+            <section class="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl mb-5 border border-cyan-500/40 shadow-2xl">
+                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span>💳</span> Datos de Transferencia Bancaria
+                </h2>
+                <div class="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5 text-slate-300">
+                    <p><strong class="text-cyan-300">Banco:</strong> Mercado Pago W</p>
+                    <p><strong class="text-cyan-300">Beneficiario:</strong> Mayra Paola Ramirez Ibarra</p>
+                    <div class="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-700 mt-1">
+                        <span class="font-mono text-cyan-400 font-bold text-xs select-all">722969020075560673</span>
+                        <button type="button" onclick="copiarClabe('722969020075560673')" class="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
+                            Copiar
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
+                    <span class="text-base">📸</span>
+                    <p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
+                </div>
             </section>
 
             <div class="bg-amber-950/60 border border-amber-500/50 p-3 rounded-xl mb-5 text-amber-200 text-xs flex items-start space-x-2">
@@ -177,7 +209,19 @@
                 </section>
 
                 <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
-                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">2. Personaliza tu Sesión</h2>
+                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">2. Paquete y Modalidad de Pago</h2>
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Selecciona tu Paquete / Modalidad:</label>
+                        <select id="paquetePilates" required class="w-full p-3 rounded-lg input-dark text-sm text-white">
+                            <option value="Clase Individual Pilates">💳 Clase Individual Pilates</option>
+                            <option value="Paquete Mensual Pilates">🔥 Paquete Mensual Pilates</option>
+                            <option value="Paquete Personalizado / Consulta">⭐ Paquete Personalizado</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
+                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Personaliza tu Sesión</h2>
                     
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Fruta preferida:</label>
@@ -195,6 +239,27 @@
                     </div>
                 </section>
 
+                <!-- DATOS BANCARIOS PILATES -->
+                <section class="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-purple-500/40 shadow-2xl">
+                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <span>💳</span> Datos de Transferencia Bancaria
+                    </h2>
+                    <div class="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5 text-slate-300">
+                        <p><strong class="text-purple-300">Banco:</strong> Mercado Pago W</p>
+                        <p><strong class="text-purple-300">Beneficiario:</strong> Mayra Paola Ramirez Ibarra</p>
+                        <div class="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-700 mt-1">
+                            <span class="font-mono text-purple-300 font-bold text-xs select-all">722969020075560673</span>
+                            <button type="button" onclick="copiarClabe('722969020075560673')" class="bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
+                        <span class="text-base">📸</span>
+                        <p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
+                    </div>
+                </section>
+
                 <button type="submit" class="w-full py-4 rounded-xl font-extrabold uppercase tracking-wider bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all">
                     Reservar Lugar Pilates
                 </button>
@@ -206,10 +271,16 @@
     <script>
         let biciSeleccionada = null;
         let listaClasesGlobal = [];
+        const NUMERO_ADMIN_WHATSAPP = "523522083263";
 
         document.addEventListener("DOMContentLoaded", () => {
             cargarClases();
         });
+
+        function copiarClabe(clabe) {
+            navigator.clipboard.writeText(clabe);
+            alert("¡CLABE copiada al portapapeles!");
+        }
 
         function cambiarSeccion(valor) {
             const vistaSpinning = document.getElementById('vistaSpinning');
@@ -385,6 +456,7 @@
             const nombre = document.getElementById('nombre').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
             const selectClase = document.getElementById('select-clase');
+            const modalidadPago = document.getElementById('select-modalidad-spinning').value;
             const claseId = parseInt(selectClase.value);
             const claseTexto = selectClase.options[selectClase.selectedIndex]?.text || '';
 
@@ -407,6 +479,7 @@
                 cliente_telefono: telefono,
                 clase_id: claseId,
                 clase_texto: claseTexto,
+                modalidad_pago: modalidadPago,
                 bici_id: numBiciReserva,
                 fecha_reserva: fechaHoy
             };
@@ -435,15 +508,16 @@
 
                 alert(`¡Bicicleta #${numBiciReserva} reservada con éxito! Te redirigiremos a WhatsApp.`);
                 
-                const numeroAdmin = "523521254602"; 
                 const mensajeWS = `Hola! Acabo de hacer una reserva en *Spinning Galaxy Room*:%0A%0A` +
                                   `❖ *Nombre:* ${encodeURIComponent(nombre)}%0A` +
                                   `❖ *Teléfono:* ${encodeURIComponent(telefono)}%0A` +
                                   `❖ *Bicicleta Reservada:* ${numBiciReserva}%0A` +
-                                  `❖ *Clase:* ${encodeURIComponent(claseTexto)}%0A%0A` +
+                                  `❖ *Clase:* ${encodeURIComponent(claseTexto)}%0A` +
+                                  `💳 *Modalidad de Pago:* ${encodeURIComponent(modalidadPago)}%0A%0A` +
+                                  `📸 *Adjunto mi comprobante de pago a continuación.*%0A%0A` +
                                   `⚠️ *Nota:* Recuerdo que tengo hasta 1 hora antes de la clase para cancelar sin cargo.`;
 
-                window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`, '_blank');
                 location.reload();
 
             } catch (err) {
@@ -537,7 +611,6 @@
                 const nuevasReservas = reservasLocales.filter(r => r.id !== reservaId);
                 guardarReservasLocales(nuevasReservas);
 
-                const numeroAdmin = "523521254602";
                 const mensajeWS = `Hola! Vengo a CANCELAR mi reserva en *Spinning Galaxy Room*:%0A%0A` +
                                   `❖ *Nombre:* ${encodeURIComponent(reserva.cliente_nombre)}%0A` +
                                   `❖ *Teléfono:* ${encodeURIComponent(reserva.cliente_telefono)}%0A` +
@@ -545,7 +618,7 @@
                                   `❖ *Clase:* ${encodeURIComponent(reserva.clase_texto)}`;
 
                 alert('Tu reserva ha sido cancelada exitosamente y la bicicleta ha quedado disponible nuevamente.');
-                window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`, '_blank');
                 
                 cargarBicis();
                 buscarReservasParaCancelar();
@@ -557,6 +630,7 @@
             const nombre = document.getElementById('nombrePilates').value.trim();
             const telefono = document.getElementById('telPilates').value.trim();
             const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
+            const paquete = document.getElementById('paquetePilates').value;
             const fruta = document.getElementById('fruta').value.trim();
             const bebida = document.getElementById('bebida').value.trim();
             const personaje = document.getElementById('personaje').value.trim();
@@ -565,6 +639,7 @@
                 nombre: nombre,
                 telefono: telefono,
                 fecha_nacimiento: fechaNacimiento,
+                paquete: paquete,
                 fruta: fruta,
                 bebida: bebida,
                 personaje: personaje
@@ -579,16 +654,17 @@
 
                 alert('¡Reserva de Pilates completada! Redirigiendo a WhatsApp...');
 
-                const numeroAdmin = "523521254602";
                 const mensajeWS = `Hola! Acabo de realizar una reserva para *Pilates Studio*:%0A%0A` +
                                   `👤 *Nombre:* ${encodeURIComponent(nombre)}%0A` +
                                   `📱 *Teléfono:* ${encodeURIComponent(telefono)}%0A` +
                                   `🎂 *Fecha de Nacimiento:* ${encodeURIComponent(fechaNacimiento)}%0A` +
+                                  `💳 *Paquete/Modalidad:* ${encodeURIComponent(paquete)}%0A` +
                                   `🍎 *Fruta preferida:* ${encodeURIComponent(fruta || 'N/A')}%0A` +
                                   `🥤 *Bebida preferida:* ${encodeURIComponent(bebida || 'N/A')}%0A` +
-                                  `🌟 *Personaje/Temática:* ${encodeURIComponent(personaje || 'N/A')}`;
+                                  `🌟 *Personaje/Temática:* ${encodeURIComponent(personaje || 'N/A')}%0A%0A` +
+                                  `📸 *Adjunto mi comprobante de pago a continuación.*`;
 
-                window.open(`https://wa.me/${numeroAdmin}?text=${mensajeWS}`, '_blank');
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`, '_blank');
                 document.getElementById('formPilates').reset();
             } catch (err) {
                 alert('Ocurrió un error al guardar la reserva de Pilates.');
