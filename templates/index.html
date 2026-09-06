@@ -563,58 +563,42 @@
                 return;
             }
 
-            const claseInfo = listaClasesGlobal.find(c => c.id === reserva.clase_id);
-            if (claseInfo) {
-                const partes = claseInfo.hora.trim().split(" ");
-                const tiempo = partes[0].split(":");
-                let horas = parseInt(tiempo[0]);
-                const minutos = parseInt(tiempo[1]);
-                const ampm = partes[1];
-
-                if (ampm === "PM" && horas < 12) horas += 12;
-                if (ampm === "AM" && horas === 12) horas = 0;
-
-                const [año, mes, dia] = reserva.fecha_reserva.split('-').map(Number);
-                const fechaHoraClase = new Date(año, mes - 1, dia, horas, minutos, 0);
-                
-                const ahora = new Date();
-                const diferenciaMs = fechaHoraClase - ahora;
-                const diferenciaHoras = diferenciaMs / (1000 * 60 * 60);
-
-                const minutosDesdeReserva = (Date.now() - reserva.id) / (1000 * 60);
-
-                if (diferenciaHoras < 1 && minutosDesdeReserva > 10) {
-                    alert('⚠️ Ya no es posible cancelar esta cita de manera gratuita porque falta menos de 1 hora para su inicio. Se te cobrará como si hubieras asistido.');
-                    return;
-                }
+            try {
+                await fetch(`/api/cancelar/${reserva.bici_id}`, { method: 'DELETE' });
+            } catch (e) {
+                console.error("Error al cancelar en el backend:", e);
             }
 
-            if (confirm('¿Estás seguro de que deseas cancelar esta reserva? Tu bicicleta volverá a estar disponible.')) {
-                try {
-                    await fetch('/api/cancelar', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ bicicleta: String(reserva.bici_id) })
-                    });
-                } catch (e) {
-                    console.error("No se pudo notificar al servidor la cancelación:", e);
-                }
+            const nuevasReservas = reservasLocales.filter(r => r.id !== reservaId);
+            guardarReservasLocales(nuevasReservas);
+            alert('Reserva cancelada con éxito.');
+            cargarBicis();
+            buscarReservasParaCancelar();
+        }
 
-                const nuevasReservas = reservasLocales.filter(r => r.id !== reservaId);
-                guardarReservasLocales(nuevasReservas);
+        function confirmarReservaPilates(e) {
+            e.preventDefault();
 
-                const mensajeWS = `Hola! Vengo a CANCELAR mi reserva en *Spinning Galaxy Room*:%0A%0A` +
-                                  `❖ *Nombre:* ${encodeURIComponent(reserva.cliente_nombre)}%0A` +
-                                  `❖ *Teléfono:* ${encodeURIComponent(reserva.cliente_telefono)}%0A` +
-                                  `❖ *Bicicleta liberada:* ${reserva.bici_id}%0A` +
-                                  `❖ *Clase:* ${encodeURIComponent(reserva.clase_texto)}`;
+            const nombre = document.getElementById('nombrePilates').value.trim();
+            const telefono = document.getElementById('telPilates').value.trim();
+            const fechaNac = document.getElementById('fechaNacimientoPilates').value;
+            const paquete = document.getElementById('paquetePilates').value;
+            const fruta = document.getElementById('fruta').value.trim() || 'No especificada';
+            const bebida = document.getElementById('bebida').value.trim() || 'No especificada';
+            const personaje = document.getElementById('personaje').value.trim() || 'No especificado';
 
-                alert('Tu reserva ha sido cancelada exitosamente y la bicicleta ha quedado disponible nuevamente.');
-                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`, '_blank');
-                
-                cargarBicis();
-                buscarReservasParaCancelar();
-            }
+            const mensajeWS = `Hola! Acabo de hacer una reserva en *Pilates Studio*:%0A%0A` +
+                              `❖ *Nombre:* ${encodeURIComponent(nombre)}%0A` +
+                              `❖ *Teléfono:* ${encodeURIComponent(telefono)}%0A` +
+                              `❖ *Fecha de Nacimiento:* ${encodeURIComponent(fechaNac)}%0A` +
+                              `💳 *Paquete / Modalidad:* ${encodeURIComponent(paquete)}%0A%0A` +
+                              `✨ *Personalización de Sesión:*%0A` +
+                              `• *Fruta:* ${encodeURIComponent(fruta)}%0A` +
+                              `• *Bebida:* ${encodeURIComponent(bebida)}%0A` +
+                              `• *Temática/Personaje:* ${encodeURIComponent(personaje)}%0A%0A` +
+                              `📸 *Adjunto mi comprobante de pago a continuación.*`;
+
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`, '_blank');
         }
     </script>
 </body>
