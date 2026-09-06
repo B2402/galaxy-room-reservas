@@ -81,13 +81,13 @@ async def obtener_bicicletas():
     return [
         {"id": 1, "numero": 1, "fila": "Frente"},
         {"id": 2, "numero": 2, "fila": "Frente"},
-        {"id": 3, "numero": 3, "fila": "Frente"},
         
+        {"id": 3, "numero": 3, "fila": "Centro"},
         {"id": 4, "numero": 4, "fila": "Centro"},
         {"id": 5, "numero": 5, "fila": "Centro"},
         {"id": 6, "numero": 6, "fila": "Centro"},
-        {"id": 7, "numero": 7, "fila": "Centro"},
         
+        {"id": 7, "numero": 7, "fila": "Atrás"},
         {"id": 8, "numero": 8, "fila": "Atrás"},
         {"id": 9, "numero": 9, "fila": "Atrás"},
         {"id": 10, "numero": 10, "fila": "Atrás"}
