@@ -214,7 +214,6 @@
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Selecciona tu Paquete u Horario Especial:</label>
                         <select id="paquetePilates" required onchange="alCambiarOpcionPilates()" class="w-full p-3 rounded-lg input-dark text-sm text-white">
-                            <!-- Opción Temporal Especial -->
                             <optgroup label="✨ Evento Especial (Viernes 11 Sep)">
                                 <option value="Evento Pilates 5:00 PM ($380 MXN)">🎉 Evento Pilates — 5:00 PM ($380 MXN)</option>
                                 <option value="Evento Pilates 6:00 PM ($380 MXN)">🎉 Evento Pilates — 6:00 PM ($380 MXN)</option>
@@ -243,14 +242,12 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <!-- Lado Izquierdo (2 Camas) -->
                         <div class="space-y-2">
                             <p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Izquierdo (2)</p>
                             <div id="cama-1-container"></div>
                             <div id="cama-2-container"></div>
                         </div>
 
-                        <!-- Lado Derecho (3 Camas) -->
                         <div class="space-y-2">
                             <p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Derecho (3)</p>
                             <div id="cama-3-container"></div>
@@ -501,12 +498,10 @@
             }
         }
 
-        /* --- LÓGICA DE PILATES & EVENTO TEMPORAL (5 CAMAS) --- */
         function renderizarCamasPilates() {
             const paquete = document.getElementById('paquetePilates').value;
             const reservasPilates = obtenerReservasPilatesLocales();
             
-            // Ocupación filtrada por evento/horario
             const ocupadas = reservasPilates
                 .filter(r => r.paquete === paquete)
                 .map(r => r.cama_id);
@@ -595,19 +590,19 @@
 
             alert(`¡Cama #${camaSeleccionada} reservada con éxito! Te redirigiremos a WhatsApp.`);
 
-            const mensajeWS = `Hola! Acabo de hacer una reserva en *Pilates Studio*:%0A%0A` +
-                              `❖ *Nombre:* ${encodeURIComponent(nombre)}%0A` +
-                              `❖ *Teléfono:* ${encodeURIComponent(tel)}%0A` +
-                              `❖ *Fecha Nacimiento:* ${encodeURIComponent(fechaNac)}%0A` +
-                              `❖ *Cama Reservada:* Cama #${camaSeleccionada} (de 5 lugares)%0A` +
-                              `❖ *Paquete / Evento:* ${encodeURIComponent(paquete)}%0A%0A` +
-                              `🧘 *Personalización:*%0A` +
-                              `• *Fruta:* ${encodeURIComponent(fruta)}%0A` +
-                              `• *Bebida:* ${encodeURIComponent(bebida)}%0A` +
-                              `• *Personaje/Temática:* ${encodeURIComponent(personaje)}%0A%0A` +
-                              `📸 *Adjunto mi comprobante de pago a continuación.*`;
+            const mensajeTexto = `Hola! Acabo de hacer una reserva en *Pilates Studio*:\n\n` +
+                                 `❖ *Nombre:* ${nombre}\n` +
+                                 `❖ *Teléfono:* ${tel}\n` +
+                                 `❖ *Fecha Nacimiento:* ${fechaNac}\n` +
+                                 `❖ *Cama Reservada:* Cama #${camaSeleccionada} (de 5 lugares)\n` +
+                                 `❖ *Paquete / Evento:* ${paquete}\n\n` +
+                                 `🧘 *Personalización:* \n` +
+                                 `• *Fruta:* ${fruta}\n` +
+                                 `• *Bebida:* ${bebida}\n` +
+                                 `• *Personaje/Temática:* ${personaje}\n\n` +
+                                 `📸 *Adjunto mi comprobante de pago a continuación.*`;
 
-            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`, '_blank');
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensajeTexto)}`, '_blank');
             location.reload();
         }
 
@@ -667,16 +662,15 @@
 
                 alert(`¡Bicicleta #${numBiciReserva} reservada con éxito! Te redirigiremos a WhatsApp.`);
                 
-                const mensajeWS = `Hola! Acabo de hacer una reserva en *Spinning Galaxy Room*:%0A%0A` +
-                                  `❖ *Nombre:* ${encodeURIComponent(nombre)}%0A` +
-                                  `❖ *Teléfono:* ${encodeURIComponent(telefono)}%0A` +
-                                  `❖ *Bicicleta Reservada:* ${numBiciReserva}%0A` +
-                                  `❖ *Clase:* ${encodeURIComponent(claseTexto)}%0A` +
-                                  `💳 *Modalidad de Pago:* ${encodeURIComponent(modalidadPago)}%0A%0A` +
-                                  `📸 *Adjunto mi comprobante de pago a continuación.*%0A%0A` +
-                                  `⚠️ *Nota:* Recuerdo que tengo hasta 1 hora antes de la clase para cancelar sin cargo.`;
+                const mensajeTexto = `Hola! Acabo de hacer una reserva en *Spinning Galaxy Room*:\n\n` +
+                                     `❖ *Nombre:* ${nombre}\n` +
+                                     `❖ *Teléfono:* ${telefono}\n` +
+                                     `❖ *Bicicleta Reservada:* #${numBiciReserva}\n` +
+                                     `❖ *Clase:* ${claseTexto}\n` +
+                                     `💳 *Modalidad de Pago:* ${modalidadPago}\n\n` +
+                                     `📸 *Adjunto mi comprobante de pago a continuación.*`;
 
-                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`, '_blank');
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensajeTexto)}`, '_blank');
                 location.reload();
 
             } catch (err) {
@@ -722,3 +716,5 @@
     </script>
 </body>
 </html>
+
+            
