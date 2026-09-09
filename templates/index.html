@@ -304,9 +304,9 @@
 
     </div>
 
-    <!-- BOTÓN FLOTANTE PARA LIMPIAR PRUEBAS DE LOCALSTORAGE -->
-    <button onclick="localStorage.clear(); location.reload();" 
-            class="fixed bottom-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 z-50 uppercase tracking-wider border border-red-400">
+    <!-- BOTÓN FLOTANTE MODO ADMIN/PRUEBAS (Oculto por defecto para clientes) -->
+    <button id="btnResetAdmin" onclick="localStorage.clear(); location.reload();" 
+            class="hidden fixed bottom-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 z-50 uppercase tracking-wider border border-red-400">
         🧹 Resetear Pruebas
     </button>
 
@@ -317,6 +317,11 @@
         const NUMERO_ADMIN_WHATSAPP = "523522083263";
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Muestra el botón solo si la URL incluye '?admin=1' o '?test=1'
+            if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
+                document.getElementById('btnResetAdmin').classList.remove('hidden');
+            }
+
             cargarClases();
             renderizarCamasPilates();
         });
