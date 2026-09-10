@@ -17,7 +17,7 @@ app = FastAPI(
 # Servir archivos estáticos
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-# Estructura de datos temporal en memoria para almacenar las reservas
+# Estructura de datos temporal en memoria
 reservas_db: Dict[str, Dict[str, str]] = {}
 reservas_pilates_db: List[Dict[str, Any]] = []
 
@@ -46,13 +46,13 @@ async def read_index():
 # --- ENDPOINTS SPINNING ---
 
 @app.get("/api/reservas")
-async def obtener_reservas():
-    """Devuelve la lista de IDs de bicicletas reservadas."""
-    return {"ocupadas": list(reservas_db.keys())}
+async def obtener_reservas(clase_id: Optional[str] = None, fecha: Optional[str] = None):
+    """Devuelve la lista de bicicletas reservadas."""
+    return {"bicis_ocupadas": [int(k) for k in reservas_db.keys() if k.isdigit()]}
 
 @app.post("/api/reservar")
 async def registrar_reserva(reserva: ReservaSchema):
-    """Registra una nueva reserva si la bicicleta está disponible."""
+    """Registra una nueva reserva de bicicleta."""
     bici_id = str(reserva.bicicleta).strip()
     if bici_id in reservas_db:
         raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada.")
@@ -65,54 +65,52 @@ async def registrar_reserva(reserva: ReservaSchema):
 
 @app.post("/api/cancelar")
 async def cancelar_reserva(data: CancelarReservaSchema):
-    """Libera una bicicleta previamente reservada en el servidor."""
+    """Cancela una reserva de bicicleta."""
     bici_id = str(data.bicicleta).strip()
     if bici_id in reservas_db:
         del reservas_db[bici_id]
         return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} liberada exitosamente."}
     return {"status": "ok", "mensaje": "La bicicleta no estaba registrada en el servidor."}
 
-# --- ENDPOINTS PILATES (Soporta /api/pilates/... y /api/reservas-pilates) ---
+# --- ENDPOINTS PILATES ---
 
 @app.get("/api/pilates/reservas")
 @app.get("/api/reservas-pilates")
 async def obtener_reservas_pilates(paquete: Optional[str] = None):
-    """Devuelve las camas ocupadas para Pilates según el paquete/evento seleccionado."""
+    """Devuelve las camas ocupadas para Pilates."""
     if paquete:
-        camas_ocupadas = [
-            str(r.get("cama")) for r in reservas_pilates_db 
-            if str(r.get("paquete")) == str(paquete) and r.get("cama")
+        camas = [
+            int(r.get("cama")) for r in reservas_pilates_db 
+            if str(r.get("paquete")) == str(paquete) and str(r.get("cama")).isdigit()
         ]
-        return {"ocupadas": camas_ocupadas}
+        return {"camas_ocupadas": camas, "ocupadas": camas}
     
-    camas_ocupadas = [str(r.get("cama")) for r in reservas_pilates_db if r.get("cama")]
-    return {"ocupadas": camas_ocupadas}
+    camas = [int(r.get("cama")) for r in reservas_pilates_db if str(r.get("cama")).isdigit()]
+    return {"camas_ocupadas": camas, "ocupadas": camas}
 
 @app.post("/api/pilates/reservar")
 @app.post("/api/reservas-pilates")
 async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
-    """Registra la reserva para la sesión de Pilates Studio validando disponibilidad de cama."""
+    """Registra la reserva de Pilates validando disponibilidad."""
     cama_id = str(reserva.cama).strip() if reserva.cama else ""
     paquete_id = str(reserva.paquete).strip() if reserva.paquete else ""
 
-    # Verificar si la cama ya está ocupada en ese mismo paquete/horario
     if cama_id and paquete_id:
         cama_ocupada = any(
             str(r.get("cama")) == cama_id and str(r.get("paquete")) == paquete_id 
             for r in reservas_pilates_db
         )
         if cama_ocupada:
-            raise HTTPException(status_code=400, detail=f"La cama #{cama_id} ya se encuentra reservada para este horario.")
+            raise HTTPException(status_code=400, detail=f"La cama #{cama_id} ya se encuentra reservada para este paquete/horario.")
 
     nueva_reserva = reserva.dict()
     reservas_pilates_db.append(nueva_reserva)
     return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
 
-# --- ENDPOINTS GENERALES ---
+# --- ENDPOINTS AUXILIARES ---
 
 @app.get("/bicicletas")
 async def obtener_bicicletas():
-    """Devuelve las bicicletas distribuidas originalmente."""
     return [
         {"id": 1, "numero": 1, "fila": "Frente"},
         {"id": 2, "numero": 2, "fila": "Frente"},
