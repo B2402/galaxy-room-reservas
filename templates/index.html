@@ -175,7 +175,7 @@
                 </p>
             </div>
 
-            <button onclick="confirmarReserva()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-cyan-500/30 transition-all uppercase tracking-wider mb-6">
+            <button type="button" onclick="confirmarReserva()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-cyan-500/30 transition-all uppercase tracking-wider mb-6">
                 Confirmar Reserva
             </button>
 
@@ -188,7 +188,7 @@
                 </p>
                 <div class="flex gap-2 mb-3">
                     <input type="tel" id="telCancelar" placeholder="Tu número de WhatsApp" class="flex-1 bg-slate-800/90 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-red-400 text-white placeholder-slate-400">
-                    <button onclick="buscarReservasParaCancelar()" class="bg-red-600/80 hover:bg-red-500 text-white font-bold px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all">
+                    <button type="button" onclick="buscarReservasParaCancelar()" class="bg-red-600/80 hover:bg-red-500 text-white font-bold px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all">
                         Buscar
                     </button>
                 </div>
@@ -305,7 +305,7 @@
     </div>
 
     <!-- BOTÓN FLOTANTE MODO ADMIN/PRUEBAS (Oculto por defecto para clientes) -->
-    <button id="btnResetAdmin" onclick="localStorage.clear(); location.reload();" 
+    <button id="btnResetAdmin" type="button" onclick="localStorage.clear(); location.reload();" 
             class="hidden fixed bottom-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 z-50 uppercase tracking-wider border border-red-400">
         🧹 Resetear Pruebas
     </button>
@@ -317,7 +317,6 @@
         const NUMERO_ADMIN_WHATSAPP = "523522083263";
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Muestra el botón solo si la URL incluye '?admin=1' o '?test=1'
             if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
                 document.getElementById('btnResetAdmin').classList.remove('hidden');
             }
@@ -509,6 +508,10 @@
             }
         }
 
+        function alCambiarOpcionPilates() {
+            renderizarCamasPilates();
+        }
+
         function renderizarCamasPilates() {
             const paquete = document.getElementById('paquetePilates').value;
             const reservasPilates = obtenerReservasPilatesLocales();
@@ -534,28 +537,192 @@
                         </button>`;
                 } else {
                     cont.innerHTML = `
-                        <button type="button" onclick="seleccionarCama(${i})" id="cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3 cursor-pointer">
-                            <span class="text-xs font-bold text-purple-200">🛏️ Cama #${i}</span>
-                            <span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">Disponible</span>
+                        <button type="button" onclick="seleccionarCama(${i})" id="cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3">
+                            <span class="text-xs font-bold">🛏️ Cama #${i}</span>
+                            <span class="text-[10px] uppercase font-bold text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/40">Disponible</span>
                         </button>`;
                 }
             }
         }
 
-        function alCambiarOpcionPilates() {
-            renderizarCamasPilates();
-        }
-
-        function seleccionarCama(numCama) {
+        function seleccionarCama(numeroCama) {
             document.querySelectorAll('.cama-card:not(.ocupada)').forEach(el => el.classList.remove('seleccionada'));
-            const btn = document.getElementById(`cama-${numCama}`);
+            const btn = document.getElementById(`cama-${numeroCama}`);
             if (btn) {
                 btn.classList.add('seleccionada');
-                camaSeleccionada = numCama;
+                camaSeleccionada = numeroCama;
                 const label = document.getElementById('labelCamaSeleccionada');
-                label.innerText = `Cama #${numCama} elegida`;
+                label.innerText = `Cama #${numeroCama} elegida`;
                 label.className = "text-xs font-extrabold text-emerald-400";
             }
+        }
+
+        function confirmarReservaPilates(event) {
+            if (event) event.preventDefault();
+
+            const nombre = document.getElementById('nombrePilates').value.trim();
+            const telefono = document.getElementById('telPilates').value.trim();
+            const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
+            const paquete = document.getElementById('paquetePilates').value;
+            const fruta = document.getElementById('fruta').value.trim() || "No especificada";
+            const bebida = document.getElementById('bebida').value.trim() || "No especificada";
+            const personaje = document.getElementById('personaje').value.trim() || "No especificado";
+
+            if (!camaSeleccionada) {
+                alert("⚠️ Por favor selecciona una cama disponible antes de continuar.");
+                return;
+            }
+
+            const reservasPilates = obtenerReservasPilatesLocales();
+            const nuevaReserva = {
+                id: Date.now(),
+                nombre: nombre,
+                telefono: telefono,
+                fecha_nacimiento: fechaNacimiento,
+                paquete: paquete,
+                cama_id: camaSeleccionada,
+                fruta: fruta,
+                bebida: bebida,
+                personaje: personaje,
+                fecha_registro: new Date().toISOString()
+            };
+
+            reservasPilates.push(nuevaReserva);
+            guardarReservasPilatesLocales(reservasPilates);
+
+            const mensaje = `✨ *NUEVA RESERVA - PILATES STUDIO* ✨\n\n` +
+                            `👤 *Nombre:* ${nombre}\n` +
+                            `📱 *Teléfono:* ${telefono}\n` +
+                            `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}\n` +
+                            `📦 *Paquete/Horario:* ${paquete}\n` +
+                            `🛏️ *Cama Asignada:* Cama #${camaSeleccionada}\n\n` +
+                            `🎨 *Personalización:*\n` +
+                            `• 🍎 Fruta: ${fruta}\n` +
+                            `• 🥤 Bebida: ${bebida}\n` +
+                            `• 🎭 Temática/Personaje: ${personaje}\n\n` +
+                            `📸 *Adjunto mi comprobante de pago a continuación:*`;
+
+            const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+
+            renderizarCamasPilates();
+            window.open(urlWhatsApp, '_blank');
+        }
+
+        async function confirmarReserva() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const claseId = document.getElementById('select-clase').value;
+            const modalidad = document.getElementById('select-modalidad-spinning').value;
+
+            if (!nombre || !telefono) {
+                alert("⚠️ Por favor ingresa tu nombre y teléfono.");
+                return;
+            }
+
+            if (!biciSeleccionada) {
+                alert("⚠️ Por favor selecciona una bicicleta.");
+                return;
+            }
+
+            const fechaHoy = new Date().toISOString().split('T')[0];
+            const reservas = obtenerReservasLocales();
+
+            const nuevaReserva = {
+                id: Date.now(),
+                nombre: nombre,
+                telefono: telefono,
+                clase_id: parseInt(claseId),
+                bici_id: biciSeleccionada,
+                modalidad: modalidad,
+                fecha_reserva: fechaHoy
+            };
+
+            reservas.push(nuevaReserva);
+            guardarReservasLocales(reservas);
+
+            const claseInfo = listaClasesGlobal.find(c => c.id == claseId);
+            const detalleClase = claseInfo ? `${claseInfo.dia} - ${claseInfo.hora} (${claseInfo.coach})` : "Clase seleccionada";
+
+            const mensaje = `🚴‍♂️ *NUEVA RESERVA - SPINNING GALAXY ROOM* 🚴‍♂️\n\n` +
+                            `👤 *Nombre:* ${nombre}\n` +
+                            `📱 *Teléfono:* ${telefono}\n` +
+                            `📅 *Clase:* ${detalleClase}\n` +
+                            `💳 *Modalidad:* ${modalidad}\n` +
+                            `🚲 *Bicicleta:* #${biciSeleccionada}\n\n` +
+                            `📸 *Adjunto mi comprobante de pago a continuación:*`;
+
+            const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+
+            cargarBicis();
+            window.open(urlWhatsApp, '_blank');
+        }
+
+        function buscarReservasParaCancelar() {
+            const tel = document.getElementById('telCancelar').value.trim();
+            const cont = document.getElementById('listaReservasCancelar');
+
+            if (!tel) {
+                alert("Ingresa un número de teléfono.");
+                return;
+            }
+
+            const reservasSpinning = obtenerReservasLocales().filter(r => r.telefono === tel);
+            const reservasPilates = obtenerReservasPilatesLocales().filter(r => r.telefono === tel);
+
+            if (reservasSpinning.length === 0 && reservasPilates.length === 0) {
+                cont.innerHTML = `<p class="text-xs text-slate-400">No se encontraron reservas con ese número.</p>`;
+                cont.classList.remove('hidden');
+                return;
+            }
+
+            let html = '';
+
+            reservasSpinning.forEach(r => {
+                html += `
+                    <div class="bg-slate-800 p-2.5 rounded-lg flex justify-between items-center text-xs">
+                        <div>
+                            <p class="font-bold text-cyan-300">🚴‍♂️ Spinning (Bici #${r.bici_id})</p>
+                            <p class="text-[10px] text-slate-400">${r.modalidad}</p>
+                        </div>
+                        <button type="button" onclick="cancelarReservaSpinning(${r.id})" class="bg-red-600/80 hover:bg-red-500 text-white px-2.5 py-1 rounded text-[10px] uppercase font-bold">
+                            Cancelar
+                        </button>
+                    </div>`;
+            });
+
+            reservasPilates.forEach(r => {
+                html += `
+                    <div class="bg-slate-800 p-2.5 rounded-lg flex justify-between items-center text-xs">
+                        <div>
+                            <p class="font-bold text-purple-300">🧘‍♀️ Pilates (Cama #${r.cama_id})</p>
+                            <p class="text-[10px] text-slate-400">${r.paquete}</p>
+                        </div>
+                        <button type="button" onclick="cancelarReservaPilates(${r.id})" class="bg-red-600/80 hover:bg-red-500 text-white px-2.5 py-1 rounded text-[10px] uppercase font-bold">
+                            Cancelar
+                        </button>
+                    </div>`;
+            });
+
+            cont.innerHTML = html;
+            cont.classList.remove('hidden');
+        }
+
+        function cancelarReservaSpinning(id) {
+            let reservas = obtenerReservasLocales();
+            reservas = reservas.filter(r => r.id !== id);
+            guardarReservasLocales(reservas);
+            alert("Reserva de Spinning cancelada.");
+            cargarBicis();
+            buscarReservasParaCancelar();
+        }
+
+        function cancelarReservaPilates(id) {
+            let reservas = obtenerReservasPilatesLocales();
+            reservas = reservas.filter(r => r.id !== id);
+            guardarReservasPilatesLocales(reservas);
+            alert("Reserva de Pilates cancelada.");
+            renderizarCamasPilates();
+            buscarReservasParaCancelar();
         }
     </script>
 </body>
