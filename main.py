@@ -43,6 +43,8 @@ class ReservaPilatesSchema(BaseModel):
 async def read_index():
     return FileResponse(BASE_DIR / "templates" / "index.html")
 
+# --- ENDPOINTS SPINNING ---
+
 @app.get("/api/reservas")
 async def obtener_reservas():
     """Devuelve la lista de IDs de bicicletas reservadas."""
@@ -70,7 +72,10 @@ async def cancelar_reserva(data: CancelarReservaSchema):
         return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} liberada exitosamente."}
     return {"status": "ok", "mensaje": "La bicicleta no estaba registrada en el servidor."}
 
+# --- ENDPOINTS PILATES (Soporta /api/pilates/... y /api/reservas-pilates) ---
+
 @app.get("/api/pilates/reservas")
+@app.get("/api/reservas-pilates")
 async def obtener_reservas_pilates(paquete: Optional[str] = None):
     """Devuelve las camas ocupadas para Pilates según el paquete/evento seleccionado."""
     if paquete:
@@ -84,6 +89,7 @@ async def obtener_reservas_pilates(paquete: Optional[str] = None):
     return {"ocupadas": camas_ocupadas}
 
 @app.post("/api/pilates/reservar")
+@app.post("/api/reservas-pilates")
 async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
     """Registra la reserva para la sesión de Pilates Studio validando disponibilidad de cama."""
     cama_id = str(reserva.cama).strip() if reserva.cama else ""
@@ -102,18 +108,18 @@ async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
     reservas_pilates_db.append(nueva_reserva)
     return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
 
+# --- ENDPOINTS GENERALES ---
+
 @app.get("/bicicletas")
 async def obtener_bicicletas():
     """Devuelve las bicicletas distribuidas originalmente."""
     return [
         {"id": 1, "numero": 1, "fila": "Frente"},
         {"id": 2, "numero": 2, "fila": "Frente"},
-        
         {"id": 3, "numero": 3, "fila": "Centro"},
         {"id": 4, "numero": 4, "fila": "Centro"},
         {"id": 5, "numero": 5, "fila": "Centro"},
         {"id": 6, "numero": 6, "fila": "Centro"},
-        
         {"id": 7, "numero": 7, "fila": "Atrás"},
         {"id": 8, "numero": 8, "fila": "Atrás"},
         {"id": 9, "numero": 9, "fila": "Atrás"},
