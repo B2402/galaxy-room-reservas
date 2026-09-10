@@ -1,4 +1,5 @@
 import os
+import json
 import uvicorn
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -9,17 +10,48 @@ from pydantic import BaseModel
 
 BASE_DIR = Path(__file__).resolve().parent
 
+# Archivos donde se guardarán las reservas permanentemente
+SPINNING_FILE = BASE_DIR / "reservas_spinning.json"
+PILATES_FILE = BASE_DIR / "reservas_pilates.json"
+
 app = FastAPI(
     title="Spinning & Pilates Galaxy Room",
     description="Sistema de reservas para Spinning y Pilates"
 )
 
-# Servir archivos estáticos
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-# Estructura de datos temporal en memoria
-reservas_db: Dict[str, Dict[str, str]] = {}
-reservas_pilates_db: List[Dict[str, Any]] = []
+# --- FUNCIONES PARA GUARDAR Y CARGAR DATOS PERSISTENTES ---
+
+def cargar_reservas_spinning() -> Dict[str, Dict[str, str]]:
+    if SPINNING_FILE.exists():
+        try:
+            with open(SPINNING_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def guardar_reservas_spinning(data: Dict[str, Dict[str, str]]):
+    with open(SPINNING_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def cargar_reservas_pilates() -> List[Dict[str, Any]]:
+    if PILATES_FILE.exists():
+        try:
+            with open(PILATES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+def guardar_reservas_pilates(data: List[Dict[str, Any]]):
+    with open(PILATES_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+# Cargar reservas existentes al iniciar
+reservas_db = cargar_reservas_spinning()
+reservas_pilates_db = cargar_reservas_pilates()
 
 class ReservaSchema(BaseModel):
     bicicleta: str
@@ -47,12 +79,10 @@ async def read_index():
 
 @app.get("/api/reservas")
 async def obtener_reservas(clase_id: Optional[str] = None, fecha: Optional[str] = None):
-    """Devuelve la lista de bicicletas reservadas."""
     return {"bicis_ocupadas": [int(k) for k in reservas_db.keys() if k.isdigit()]}
 
 @app.post("/api/reservar")
 async def registrar_reserva(reserva: ReservaSchema):
-    """Registra una nueva reserva de bicicleta."""
     bici_id = str(reserva.bicicleta).strip()
     if bici_id in reservas_db:
         raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada.")
@@ -61,14 +91,15 @@ async def registrar_reserva(reserva: ReservaSchema):
         "nombre": reserva.nombre,
         "telefono": reserva.telefono
     }
+    guardar_reservas_spinning(reservas_db)
     return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
 
 @app.post("/api/cancelar")
 async def cancelar_reserva(data: CancelarReservaSchema):
-    """Cancela una reserva de bicicleta."""
     bici_id = str(data.bicicleta).strip()
     if bici_id in reservas_db:
         del reservas_db[bici_id]
+        guardar_reservas_spinning(reservas_db)
         return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} liberada exitosamente."}
     return {"status": "ok", "mensaje": "La bicicleta no estaba registrada en el servidor."}
 
@@ -77,7 +108,6 @@ async def cancelar_reserva(data: CancelarReservaSchema):
 @app.get("/api/pilates/reservas")
 @app.get("/api/reservas-pilates")
 async def obtener_reservas_pilates(paquete: Optional[str] = None):
-    """Devuelve las camas ocupadas para Pilates."""
     if paquete:
         camas = [
             int(r.get("cama")) for r in reservas_pilates_db 
@@ -91,7 +121,6 @@ async def obtener_reservas_pilates(paquete: Optional[str] = None):
 @app.post("/api/pilates/reservar")
 @app.post("/api/reservas-pilates")
 async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
-    """Registra la reserva de Pilates validando disponibilidad."""
     cama_id = str(reserva.cama).strip() if reserva.cama else ""
     paquete_id = str(reserva.paquete).strip() if reserva.paquete else ""
 
@@ -105,9 +134,22 @@ async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
 
     nueva_reserva = reserva.dict()
     reservas_pilates_db.append(nueva_reserva)
+    guardar_reservas_pilates(reservas_pilates_db)
     return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
 
-# --- ENDPOINTS AUXILIARES ---
+# --- ENDPOINT ADMIN PARA LIMPIAR RESERVAS MANUALMENTE ---
+
+@app.post("/api/admin/limpiar")
+async def limpiar_todo(tipo: str = "todas"):
+    """Permite limpiar de forma manual desde el panel de admin."""
+    global reservas_db, reservas_pilates_db
+    if tipo in ["spinning", "todas"]:
+        reservas_db.clear()
+        guardar_reservas_spinning(reservas_db)
+    if tipo in ["pilates", "todas"]:
+        reservas_pilates_db.clear()
+        guardar_reservas_pilates(reservas_pilates_db)
+    return {"status": "ok", "mensaje": f"Reservas limpiadas ({tipo})."}
 
 @app.get("/bicicletas")
 async def obtener_bicicletas():
