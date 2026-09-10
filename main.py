@@ -33,6 +33,8 @@ class ReservaPilatesSchema(BaseModel):
     nombre: str
     telefono: str
     fecha_nacimiento: str
+    paquete: Optional[str] = ""
+    cama: Optional[str] = ""
     fruta: Optional[str] = ""
     bebida: Optional[str] = ""
     personaje: Optional[str] = ""
@@ -68,9 +70,34 @@ async def cancelar_reserva(data: CancelarReservaSchema):
         return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} liberada exitosamente."}
     return {"status": "ok", "mensaje": "La bicicleta no estaba registrada en el servidor."}
 
+@app.get("/api/pilates/reservas")
+async def obtener_reservas_pilates(paquete: Optional[str] = None):
+    """Devuelve las camas ocupadas para Pilates según el paquete/evento seleccionado."""
+    if paquete:
+        camas_ocupadas = [
+            str(r.get("cama")) for r in reservas_pilates_db 
+            if str(r.get("paquete")) == str(paquete) and r.get("cama")
+        ]
+        return {"ocupadas": camas_ocupadas}
+    
+    camas_ocupadas = [str(r.get("cama")) for r in reservas_pilates_db if r.get("cama")]
+    return {"ocupadas": camas_ocupadas}
+
 @app.post("/api/pilates/reservar")
 async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
-    """Registra la reserva para la sesión de Pilates Studio."""
+    """Registra la reserva para la sesión de Pilates Studio validando disponibilidad de cama."""
+    cama_id = str(reserva.cama).strip() if reserva.cama else ""
+    paquete_id = str(reserva.paquete).strip() if reserva.paquete else ""
+
+    # Verificar si la cama ya está ocupada en ese mismo paquete/horario
+    if cama_id and paquete_id:
+        cama_ocupada = any(
+            str(r.get("cama")) == cama_id and str(r.get("paquete")) == paquete_id 
+            for r in reservas_pilates_db
+        )
+        if cama_ocupada:
+            raise HTTPException(status_code=400, detail=f"La cama #{cama_id} ya se encuentra reservada para este horario.")
+
     nueva_reserva = reserva.dict()
     reservas_pilates_db.append(nueva_reserva)
     return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
