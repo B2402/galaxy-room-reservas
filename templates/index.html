@@ -304,7 +304,7 @@
 
     </div>
 
-    <!-- BOTÓN FLOTANTE MODO ADMIN/PRUEBAS (Oculto por defecto para clientes) -->
+    <!-- BOTÓN FLOTANTE MODO ADMIN/PRUEBAS -->
     <button id="btnResetAdmin" type="button" onclick="localStorage.clear(); location.reload();" 
             class="hidden fixed bottom-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 z-50 uppercase tracking-wider border border-red-400">
         🧹 Resetear Pruebas
@@ -380,34 +380,6 @@
             }
         }
 
-        function obtenerReservasLocales() {
-            return JSON.parse(localStorage.getItem('reservas_spinning') || '[]');
-        }
-
-        function guardarReservasLocales(reservas) {
-            localStorage.setItem('reservas_spinning', JSON.stringify(reservas));
-        }
-
-        function obtenerReservasPilatesLocales() {
-            return JSON.parse(localStorage.getItem('reservas_pilates') || '[]');
-        }
-
-        function guardarReservasPilatesLocales(reservas) {
-            localStorage.setItem('reservas_pilates', JSON.stringify(reservas));
-        }
-
-        async function cargarBicicletasOcupadasAPI() {
-            try {
-                const res = await fetch('/api/reservas');
-                if (!res.ok) return [];
-                const data = await res.json();
-                return data.ocupadas || [];
-            } catch (err) {
-                console.error("Error al consultar API de reservas:", err);
-                return [];
-            }
-        }
-
         async function cargarBicis() {
             try {
                 let bicis = [];
@@ -439,12 +411,19 @@
                 const claseId = selectClase ? parseInt(selectClase.value) : null;
                 const fechaHoy = new Date().toISOString().split('T')[0];
                 
-                const reservasLocales = obtenerReservasLocales();
-                const ocupadasAPI = await cargarBicicletasOcupadasAPI();
-
-                const bicisOcupadasLocal = reservasLocales
-                    .filter(r => r.clase_id === claseId && r.fecha_reserva === fechaHoy)
-                    .map(r => String(r.bici_id));
+                // Obtener reservas del servidor
+                let ocupadasAPI = [];
+                if (claseId) {
+                    try {
+                        const resApi = await fetch(`/api/reservas?clase_id=${claseId}&fecha=${fechaHoy}`);
+                        if (resApi.ok) {
+                            const dataApi = await resApi.json();
+                            ocupadasAPI = dataApi.bicis_ocupadas || [];
+                        }
+                    } catch (e) {
+                        console.error("Error consultando servidor de reservas:", e);
+                    }
+                }
 
                 const contenedor = document.getElementById('mapa-bicis');
                 contenedor.innerHTML = '';
@@ -471,7 +450,7 @@
                         let htmlFila = `<div class="text-center"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Fila ${nombreFila}</p><div class="flex justify-center gap-2 mb-3">`;
                         listaBicis.forEach(b => {
                             const numBici = b.numero || b.id;
-                            const estaOcupada = bicisOcupadasLocal.includes(String(numBici)) || ocupadasAPI.includes(String(numBici)) || ocupadasAPI.includes(String(b.id));
+                            const estaOcupada = ocupadasAPI.includes(numBici) || ocupadasAPI.includes(b.id);
                             
                             if (estaOcupada) {
                                 htmlFila += `
@@ -512,13 +491,19 @@
             renderizarCamasPilates();
         }
 
-        function renderizarCamasPilates() {
+        async function renderizarCamasPilates() {
             const paquete = document.getElementById('paquetePilates').value;
-            const reservasPilates = obtenerReservasPilatesLocales();
             
-            const ocupadas = reservasPilates
-                .filter(r => r.paquete === paquete)
-                .map(r => r.cama_id);
+            let ocupadas = [];
+            try {
+                const resApi = await fetch(`/api/reservas?paquete=${encodeURIComponent(paquete)}`);
+                if (resApi.ok) {
+                    const dataApi = await resApi.json();
+                    ocupadas = dataApi.camas_ocupadas || [];
+                }
+            } catch (e) {
+                console.error("Error al consultar camas ocupadas:", e);
+            }
 
             camaSeleccionada = null;
             document.getElementById('labelCamaSeleccionada').innerText = "Ninguna seleccionada";
@@ -538,8 +523,8 @@
                 } else {
                     cont.innerHTML = `
                         <button type="button" onclick="seleccionarCama(${i})" id="cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3">
-                            <span class="text-xs font-bold">🛏️ Cama #${i}</span>
-                            <span class="text-[10px] uppercase font-bold text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/40">Disponible</span>
+                            <span class="text-xs font-bold text-slate-200">🛏️ Cama #${i}</span>
+                            <span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">Disponible</span>
                         </button>`;
                 }
             }
@@ -557,172 +542,203 @@
             }
         }
 
-        function confirmarReservaPilates(event) {
-            if (event) event.preventDefault();
-
-            const nombre = document.getElementById('nombrePilates').value.trim();
-            const telefono = document.getElementById('telPilates').value.trim();
-            const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
-            const paquete = document.getElementById('paquetePilates').value;
-            const fruta = document.getElementById('fruta').value.trim() || "No especificada";
-            const bebida = document.getElementById('bebida').value.trim() || "No especificada";
-            const personaje = document.getElementById('personaje').value.trim() || "No especificado";
-
-            if (!camaSeleccionada) {
-                alert("⚠️ Por favor selecciona una cama disponible antes de continuar.");
-                return;
-            }
-
-            const reservasPilates = obtenerReservasPilatesLocales();
-            const nuevaReserva = {
-                id: Date.now(),
-                nombre: nombre,
-                telefono: telefono,
-                fecha_nacimiento: fechaNacimiento,
-                paquete: paquete,
-                cama_id: camaSeleccionada,
-                fruta: fruta,
-                bebida: bebida,
-                personaje: personaje,
-                fecha_registro: new Date().toISOString()
-            };
-
-            reservasPilates.push(nuevaReserva);
-            guardarReservasPilatesLocales(reservasPilates);
-
-            const mensaje = `✨ *NUEVA RESERVA - PILATES STUDIO* ✨\n\n` +
-                            `👤 *Nombre:* ${nombre}\n` +
-                            `📱 *Teléfono:* ${telefono}\n` +
-                            `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}\n` +
-                            `📦 *Paquete/Horario:* ${paquete}\n` +
-                            `🛏️ *Cama Asignada:* Cama #${camaSeleccionada}\n\n` +
-                            `🎨 *Personalización:*\n` +
-                            `• 🍎 Fruta: ${fruta}\n` +
-                            `• 🥤 Bebida: ${bebida}\n` +
-                            `• 🎭 Temática/Personaje: ${personaje}\n\n` +
-                            `📸 *Adjunto mi comprobante de pago a continuación:*`;
-
-            const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
-
-            renderizarCamasPilates();
-            window.open(urlWhatsApp, '_blank');
-        }
-
         async function confirmarReserva() {
             const nombre = document.getElementById('nombre').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
-            const claseId = document.getElementById('select-clase').value;
+            const claseId = parseInt(document.getElementById('select-clase').value);
             const modalidad = document.getElementById('select-modalidad-spinning').value;
+            const fechaHoy = new Date().toISOString().split('T')[0];
 
             if (!nombre || !telefono) {
-                alert("⚠️ Por favor ingresa tu nombre y teléfono.");
+                alert("Por favor completa tu nombre y número de teléfono.");
                 return;
             }
 
             if (!biciSeleccionada) {
-                alert("⚠️ Por favor selecciona una bicicleta.");
+                alert("Por favor selecciona una bicicleta disponible.");
                 return;
             }
 
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            const reservas = obtenerReservasLocales();
-
-            const nuevaReserva = {
-                id: Date.now(),
+            const payload = {
                 nombre: nombre,
                 telefono: telefono,
-                clase_id: parseInt(claseId),
+                clase_id: claseId,
+                modalidad_pago: modalidad,
                 bici_id: biciSeleccionada,
-                modalidad: modalidad,
                 fecha_reserva: fechaHoy
             };
 
-            reservas.push(nuevaReserva);
-            guardarReservasLocales(reservas);
+            try {
+                const res = await fetch('/api/reservar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            const claseInfo = listaClasesGlobal.find(c => c.id == claseId);
-            const detalleClase = claseInfo ? `${claseInfo.dia} - ${claseInfo.hora} (${claseInfo.coach})` : "Clase seleccionada";
+                if (!res.ok) {
+                    const errData = await res.json();
+                    alert(errData.detail || "Error al procesar la reserva.");
+                    cargarBicis();
+                    return;
+                }
 
-            const mensaje = `🚴‍♂️ *NUEVA RESERVA - SPINNING GALAXY ROOM* 🚴‍♂️\n\n` +
+                const claseObj = listaClasesGlobal.find(c => c.id === claseId);
+                const descClase = claseObj ? `${claseObj.dia} - ${claseObj.hora}` : "Sesión Spinning";
+
+                const msg = `¡Hola! Confirmo mi reserva en *Spinning Galaxy Room* 🚴‍♂️\n\n` +
                             `👤 *Nombre:* ${nombre}\n` +
                             `📱 *Teléfono:* ${telefono}\n` +
-                            `📅 *Clase:* ${detalleClase}\n` +
-                            `💳 *Modalidad:* ${modalidad}\n` +
-                            `🚲 *Bicicleta:* #${biciSeleccionada}\n\n` +
-                            `📸 *Adjunto mi comprobante de pago a continuación:*`;
+                            `📅 *Clase:* ${descClase}\n` +
+                            `🚲 *Bicicleta:* #${biciSeleccionada}\n` +
+                            `💳 *Modalidad:* ${modalidad}\n\n` +
+                            `Adjunto mi comprobante de pago.`;
 
-            const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
-
-            cargarBicis();
-            window.open(urlWhatsApp, '_blank');
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+                cargarBicis();
+            } catch (err) {
+                console.error("Error al registrar reserva:", err);
+                alert("Ocurrió un error al conectar con el servidor.");
+            }
         }
 
-        function buscarReservasParaCancelar() {
+        async function confirmarReservaPilates(event) {
+            event.preventDefault();
+
+            const nombre = document.getElementById('nombrePilates').value.trim();
+            const telefono = document.getElementById('telPilates').value.trim();
+            const fechaNac = document.getElementById('fechaNacimientoPilates').value;
+            const paquete = document.getElementById('paquetePilates').value;
+            const fruta = document.getElementById('fruta').value.trim() || "No especificado";
+            const bebida = document.getElementById('bebida').value.trim() || "No especificado";
+            const personaje = document.getElementById('personaje').value.trim() || "No especificado";
+
+            if (!camaSeleccionada) {
+                alert("Por favor selecciona una cama disponible para Pilates.");
+                return;
+            }
+
+            const payload = {
+                nombre: nombre,
+                telefono: telefono,
+                fecha_nacimiento: fechaNac,
+                paquete: paquete,
+                cama_id: camaSeleccionada,
+                fruta: fruta,
+                bebida: bebida,
+                personaje: personaje
+            };
+
+            try {
+                const res = await fetch('/api/reservar-pilates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    alert(errData.detail || "Error al procesar la reserva de Pilates.");
+                    renderizarCamasPilates();
+                    return;
+                }
+
+                const msg = `¡Hola! Confirmo mi reserva en *Pilates Studio* 🧘‍♀️\n\n` +
+                            `👤 *Nombre:* ${nombre}\n` +
+                            `📱 *Teléfono:* ${telefono}\n` +
+                            `🎂 *Fecha de Nacimiento:* ${fechaNac}\n` +
+                            `✨ *Paquete/Evento:* ${paquete}\n` +
+                            `🛏️ *Cama:* #${camaSeleccionada}\n\n` +
+                            `*Preferencias Personalizadas:*\n` +
+                            `🍎 *Fruta:* ${fruta}\n` +
+                            `🥤 *Bebida:* ${bebida}\n` +
+                            `⭐ *Personaje/Temática:* ${personaje}\n\n` +
+                            `Adjunto mi comprobante de pago.`;
+
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+                renderizarCamasPilates();
+            } catch (err) {
+                console.error("Error al registrar reserva de pilates:", err);
+                alert("Ocurrió un error al conectar con el servidor.");
+            }
+        }
+
+        async function buscarReservasParaCancelar() {
             const tel = document.getElementById('telCancelar').value.trim();
             const cont = document.getElementById('listaReservasCancelar');
-
+            
             if (!tel) {
-                alert("Ingresa un número de teléfono.");
+                alert("Ingresa tu número de teléfono.");
                 return;
             }
 
-            const reservasSpinning = obtenerReservasLocales().filter(r => r.telefono === tel);
-            const reservasPilates = obtenerReservasPilatesLocales().filter(r => r.telefono === tel);
+            try {
+                const res = await fetch(`/api/mis-reservas?telefono=${encodeURIComponent(tel)}`);
+                if (!res.ok) throw new Error("Error consultando reservas");
+                const data = await res.json();
 
-            if (reservasSpinning.length === 0 && reservasPilates.length === 0) {
-                cont.innerHTML = `<p class="text-xs text-slate-400">No se encontraron reservas con ese número.</p>`;
+                cont.innerHTML = '';
                 cont.classList.remove('hidden');
-                return;
+
+                const { spinning, pilates } = data;
+
+                if (spinning.length === 0 && pilates.length === 0) {
+                    cont.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-2">No se encontraron reservas activas para este número.</p>`;
+                    return;
+                }
+
+                spinning.forEach(r => {
+                    cont.innerHTML += `
+                        <div class="bg-slate-950/80 p-2.5 rounded-lg border border-red-900/40 flex items-center justify-between text-xs">
+                            <div>
+                                <p class="font-bold text-cyan-300">🚴‍♂️ Spinning (Bici #${r.bici_id})</p>
+                                <p class="text-[10px] text-slate-400">${r.fecha_reserva} — ${r.modalidad_pago}</p>
+                            </div>
+                            <button type="button" onclick="ejecutarCancelacion('${tel}', 'spinning', ${r.id})" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded transition-all">
+                                Cancelar
+                            </button>
+                        </div>`;
+                });
+
+                pilates.forEach(r => {
+                    cont.innerHTML += `
+                        <div class="bg-slate-950/80 p-2.5 rounded-lg border border-red-900/40 flex items-center justify-between text-xs">
+                            <div>
+                                <p class="font-bold text-purple-300">🧘‍♀️ Pilates (Cama #${r.cama_id})</p>
+                                <p class="text-[10px] text-slate-400">${r.paquete}</p>
+                            </div>
+                            <button type="button" onclick="ejecutarCancelacion('${tel}', 'pilates', ${r.id})" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded transition-all">
+                                Cancelar
+                            </button>
+                        </div>`;
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Error al recuperar las reservas.");
             }
-
-            let html = '';
-
-            reservasSpinning.forEach(r => {
-                html += `
-                    <div class="bg-slate-800 p-2.5 rounded-lg flex justify-between items-center text-xs">
-                        <div>
-                            <p class="font-bold text-cyan-300">🚴‍♂️ Spinning (Bici #${r.bici_id})</p>
-                            <p class="text-[10px] text-slate-400">${r.modalidad}</p>
-                        </div>
-                        <button type="button" onclick="cancelarReservaSpinning(${r.id})" class="bg-red-600/80 hover:bg-red-500 text-white px-2.5 py-1 rounded text-[10px] uppercase font-bold">
-                            Cancelar
-                        </button>
-                    </div>`;
-            });
-
-            reservasPilates.forEach(r => {
-                html += `
-                    <div class="bg-slate-800 p-2.5 rounded-lg flex justify-between items-center text-xs">
-                        <div>
-                            <p class="font-bold text-purple-300">🧘‍♀️ Pilates (Cama #${r.cama_id})</p>
-                            <p class="text-[10px] text-slate-400">${r.paquete}</p>
-                        </div>
-                        <button type="button" onclick="cancelarReservaPilates(${r.id})" class="bg-red-600/80 hover:bg-red-500 text-white px-2.5 py-1 rounded text-[10px] uppercase font-bold">
-                            Cancelar
-                        </button>
-                    </div>`;
-            });
-
-            cont.innerHTML = html;
-            cont.classList.remove('hidden');
         }
 
-        function cancelarReservaSpinning(id) {
-            let reservas = obtenerReservasLocales();
-            reservas = reservas.filter(r => r.id !== id);
-            guardarReservasLocales(reservas);
-            alert("Reserva de Spinning cancelada.");
-            cargarBicis();
-            buscarReservasParaCancelar();
-        }
+        async function ejecutarCancelacion(telefono, tipo, idReserva) {
+            if (!confirm("¿Estás seguro de que deseas cancelar esta reserva?")) return;
 
-        function cancelarReservaPilates(id) {
-            let reservas = obtenerReservasPilatesLocales();
-            reservas = reservas.filter(r => r.id !== id);
-            guardarReservasPilatesLocales(reservas);
-            alert("Reserva de Pilates cancelada.");
-            renderizarCamasPilates();
-            buscarReservasParaCancelar();
+            try {
+                const res = await fetch('/api/cancelar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telefono: telefono, tipo: tipo, id_reserva: idReserva })
+                });
+
+                if (res.ok) {
+                    alert("Reserva cancelada con éxito.");
+                    buscarReservasParaCancelar();
+                    cargarBicis();
+                    renderizarCamasPilates();
+                } else {
+                    alert("No se pudo cancelar la reserva.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error al conectar con el servidor para cancelar.");
+            }
         }
     </script>
 </body>
