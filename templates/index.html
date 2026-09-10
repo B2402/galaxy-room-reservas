@@ -411,7 +411,6 @@
                 const claseId = selectClase ? parseInt(selectClase.value) : null;
                 const fechaHoy = new Date().toISOString().split('T')[0];
                 
-                // Obtener reservas del servidor
                 let ocupadasAPI = [];
                 if (claseId) {
                     try {
@@ -487,6 +486,52 @@
             }
         }
 
+        async function confirmarReserva() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            
+            if (!nombre || !telefono) {
+                alert("Por favor completa tu nombre y número de teléfono.");
+                return;
+            }
+
+            if (!biciSeleccionada) {
+                alert("Por favor selecciona una bicicleta disponible.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/reservar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bicicleta: String(biciSeleccionada),
+                        nombre: nombre,
+                        telefono: telefono
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Error al procesar la reserva");
+                }
+
+                alert("¡Reserva registrada con éxito!");
+
+                const mensaje = `Hola! Realicé mi reserva para Spinning Galaxy Room:\n\n` +
+                    `👤 *Nombre:* ${nombre}\n` +
+                    `📞 *Teléfono:* ${telefono}\n` +
+                    `🚴‍♂️ *Bicicleta:* #${biciSeleccionada}\n\n` +
+                    `Adjunto mi comprobante de pago.`;
+
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+                cargarBicis();
+
+            } catch (err) {
+                alert(`Error al reservar: ${err.message}`);
+            }
+        }
+
         function alCambiarOpcionPilates() {
             renderizarCamasPilates();
         }
@@ -496,10 +541,10 @@
             
             let ocupadas = [];
             try {
-                const resApi = await fetch(`/api/reservas?paquete=${encodeURIComponent(paquete)}`);
+                const resApi = await fetch(`/api/pilates/reservas?paquete=${encodeURIComponent(paquete)}`);
                 if (resApi.ok) {
                     const dataApi = await resApi.json();
-                    ocupadas = dataApi.camas_ocupadas || [];
+                    ocupadas = dataApi.camas_ocupadas || dataApi.ocupadas || [];
                 }
             } catch (e) {
                 console.error("Error al consultar camas ocupadas:", e);
@@ -513,17 +558,17 @@
                 const cont = document.getElementById(`cama-${i}-container`);
                 if (!cont) continue;
 
-                const estaOcupada = ocupadas.includes(i);
+                const estaOcupada = ocupadas.includes(i) || ocupadas.includes(String(i));
                 if (estaOcupada) {
                     cont.innerHTML = `
                         <button type="button" disabled class="cama-card ocupada w-full py-2.5 rounded-lg flex items-center justify-between px-3">
-                            <span class="text-xs font-bold text-red-200">🛏️ Cama #${i}</span>
+                            <span class="text-xs font-bold text-red-200">🧘‍♀️ Cama #${i}</span>
                             <span class="text-[10px] uppercase font-bold text-red-300 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/40">Ocupada</span>
                         </button>`;
                 } else {
                     cont.innerHTML = `
                         <button type="button" onclick="seleccionarCama(${i})" id="cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3">
-                            <span class="text-xs font-bold text-slate-200">🛏️ Cama #${i}</span>
+                            <span class="text-xs font-bold text-slate-200">🧘‍♀️ Cama #${i}</span>
                             <span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">Disponible</span>
                         </button>`;
                 }
@@ -535,199 +580,64 @@
             const btn = document.getElementById(`cama-${numCama}`);
             if (btn) {
                 btn.classList.add('seleccionada');
-                camaSeleccionada = numCama;
+                camaSeleccionada = String(numCama);
                 const label = document.getElementById('labelCamaSeleccionada');
                 label.innerText = `Cama #${numCama} elegida`;
-                label.className = "text-xs font-extrabold text-emerald-400";
+                label.className = "text-xs font-extrabold text-purple-300";
             }
         }
 
-        async function confirmarReserva() {
-            const nombre = document.getElementById('nombre').value.trim();
-            const telefono = document.getElementById('telefono').value.trim();
-            const selectClase = document.getElementById('select-clase');
-            const claseId = selectClase ? parseInt(selectClase.value) : null;
-            const modalidad = document.getElementById('select-modalidad-spinning').value;
-
-            if (!nombre || !telefono) {
-                alert("Por favor completa tu nombre y número de teléfono.");
-                return;
-            }
-            if (!claseId) {
-                alert("Por favor selecciona una clase disponible.");
-                return;
-            }
-            if (!biciSeleccionada) {
-                alert("Por favor selecciona una bicicleta disponible.");
-                return;
-            }
-
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            const payload = {
-                nombre: nombre,
-                telefono: telefono,
-                clase_id: claseId,
-                bicicleta_id: biciSeleccionada,
-                modalidad: modalidad,
-                fecha: fechaHoy
-            };
-
-            try {
-                const res = await fetch('/api/reservas', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (res.ok) {
-                    const claseObj = listaClasesGlobal.find(c => c.id === claseId);
-                    const detalleClase = claseObj ? `${claseObj.dia} - ${claseObj.hora} (${claseObj.coach})` : "Clase Spinning";
-                    
-                    const mensajeWS = `Hola! Realicé una reserva para Spinning Galaxy Room:%0A%0A` +
-                                      `👤 *Nombre:* ${nombre}%0A` +
-                                      `📞 *Teléfono:* ${telefono}%0A` +
-                                      `📅 *Clase:* ${detalleClase}%0A` +
-                                      `💳 *Modalidad:* ${modalidad}%0A` +
-                                      `🚴‍♂️ *Bici:* #${biciSeleccionada}%0A%0A` +
-                                      `Adjunto mi comprobante de pago.`;
-
-                    alert("¡Reserva realizada con éxito! Redirigiendo a WhatsApp para enviar comprobante...");
-                    window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`;
-                } else {
-                    const errData = await res.json();
-                    alert("Error al reservar: " + (errData.detail || "Intenta de nuevo."));
-                }
-            } catch (err) {
-                console.error("Error al enviar reserva:", err);
-                alert("Ocurrió un error al procesar la reserva. Revisa tu conexión.");
-            }
-        }
-
-        async function confirmarReservaPilates(event) {
-            event.preventDefault();
-
-            const nombre = document.getElementById('nombrePilates').value.trim();
-            const telefono = document.getElementById('telPilates').value.trim();
-            const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
-            const paquete = document.getElementById('paquetePilates').value;
-            const fruta = document.getElementById('fruta').value.trim();
-            const bebida = document.getElementById('bebida').value.trim();
-            const personaje = document.getElementById('personaje').value.trim();
+        async function confirmarReservaPilates(e) {
+            e.preventDefault();
 
             if (!camaSeleccionada) {
-                alert("Por favor selecciona una cama disponible para Pilates.");
+                alert("Por favor selecciona una cama disponible.");
                 return;
             }
 
             const payload = {
-                nombre: nombre,
-                telefono: telefono,
-                fecha_nacimiento: fechaNacimiento,
-                paquete: paquete,
-                cama_id: camaSeleccionada,
-                fruta: fruta,
-                bebida: bebida,
-                personaje: personaje
+                nombre: document.getElementById('nombrePilates').value.trim(),
+                telefono: document.getElementById('telPilates').value.trim(),
+                fecha_nacimiento: document.getElementById('fechaNacimientoPilates').value,
+                paquete: document.getElementById('paquetePilates').value,
+                cama: String(camaSeleccionada),
+                fruta: document.getElementById('fruta').value.trim(),
+                bebida: document.getElementById('bebida').value.trim(),
+                personaje: document.getElementById('personaje').value.trim()
             };
 
             try {
-                const res = await fetch('/api/reservas-pilates', {
+                const res = await fetch('/api/pilates/reservar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                if (res.ok) {
-                    const mensajeWS = `Hola! Realicé una reserva para Pilates Studio:%0A%0A` +
-                                      `👤 *Nombre:* ${nombre}%0A` +
-                                      `📞 *Teléfono:* ${telefono}%0A` +
-                                      `🎂 *Fecha Nacimiento:* ${fechaNacimiento}%0A` +
-                                      `✨ *Paquete/Horario:* ${paquete}%0A` +
-                                      `🛏️ *Cama:* #${camaSeleccionada}%0A` +
-                                      `🍏 *Fruta:* ${fruta || 'N/A'}%0A` +
-                                      `🥤 *Bebida:* ${bebida || 'N/A'}%0A` +
-                                      `🎭 *Temática/Personaje:* ${personaje || 'N/A'}%0A%0A` +
-                                      `Adjunto mi comprobante de pago.`;
-
-                    alert("¡Reserva de Pilates realizada con éxito! Redirigiendo a WhatsApp...");
-                    window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWS}`;
-                } else {
-                    const errData = await res.json();
-                    alert("Error al reservar Pilates: " + (errData.detail || "Intenta de nuevo."));
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Error al procesar la reserva");
                 }
+
+                alert("¡Reserva de Pilates registrada exitosamente!");
+
+                const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
+                    `👤 *Nombre:* ${payload.nombre}\n` +
+                    `📞 *Teléfono:* ${payload.telefono}\n` +
+                    `📦 *Paquete/Horario:* ${payload.paquete}\n` +
+                    `🧘‍♀️ *Cama:* #${payload.cama}\n` +
+                    `🍎 *Fruta:* ${payload.fruta || 'N/A'}\n` +
+                    `🥤 *Bebida:* ${payload.bebida || 'N/A'}\n` +
+                    `🎭 *Temática:* ${payload.personaje || 'N/A'}\n\n` +
+                    `Adjunto mi comprobante de pago.`;
+
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+                
+                camaSeleccionada = null;
+                document.getElementById('formPilates').reset();
+                alCambiarOpcionPilates();
+
             } catch (err) {
-                console.error("Error al enviar reserva de Pilates:", err);
-                alert("Ocurrió un error al procesar la reserva. Revisa tu conexión.");
-            }
-        }
-
-        async function buscarReservasParaCancelar() {
-            const telefono = document.getElementById('telCancelar').value.trim();
-            const contLista = document.getElementById('listaReservasCancelar');
-
-            if (!telefono) {
-                alert("Ingresa un número de teléfono válido.");
-                return;
-            }
-
-            try {
-                const res = await fetch(`/api/mis-reservas?telefono=${encodeURIComponent(telefono)}`);
-                if (res.ok) {
-                    const reservas = await res.json();
-                    contLista.innerHTML = '';
-                    
-                    if (reservas.length === 0) {
-                        contLista.innerHTML = `<p class="text-xs text-slate-400 italic">No se encontraron reservas activas para este número.</p>`;
-                    } else {
-                        reservas.forEach(r => {
-                            const infoLugar = r.bicicleta_id ? `Bici #${r.bicicleta_id}` : `Cama #${r.cama_id}`;
-                            const tipoArea = r.bicicleta_id ? 'Spinning' : 'Pilates';
-                            
-                            contLista.innerHTML += `
-                                <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center text-xs">
-                                    <div>
-                                        <p class="font-bold text-cyan-300">${tipoArea} - ${infoLugar}</p>
-                                        <p class="text-[10px] text-slate-400">${r.fecha || 'Próxima sesión'}</p>
-                                    </div>
-                                    <button type="button" onclick="cancelarReserva('${r.id}', '${tipoArea}')" class="bg-red-500/20 hover:bg-red-500/40 text-red-300 border border-red-500/30 text-[10px] px-2.5 py-1 rounded font-bold uppercase transition-all">
-                                        Cancelar
-                                    </button>
-                                </div>
-                            `;
-                        });
-                    }
-                    contLista.classList.remove('hidden');
-                } else {
-                    alert("No se pudo obtener la lista de reservas.");
-                }
-            } catch (err) {
-                console.error("Error buscando reservas:", err);
-                alert("Error de conexión al buscar reservas.");
-            }
-        }
-
-        async function cancelarReserva(reservaId, tipoArea) {
-            if (!confirm("¿Estás seguro de que deseas cancelar esta reserva?")) return;
-
-            try {
-                const endpoint = tipoArea === 'Pilates' ? `/api/reservas-pilates/${reservaId}` : `/api/reservas/${reservaId}`;
-                const res = await fetch(endpoint, { method: 'DELETE' });
-
-                if (res.ok) {
-                    alert("Reserva cancelada con éxito.");
-                    buscarReservasParaCancelar();
-                    if (tipoArea === 'Pilates') {
-                        renderizarCamasPilates();
-                    } else {
-                        cargarBicis();
-                    }
-                } else {
-                    const errData = await res.json();
-                    alert("No se pudo cancelar: " + (errData.detail || "Intenta más tarde."));
-                }
-            } catch (err) {
-                console.error("Error al cancelar reserva:", err);
-                alert("Error de conexión al cancelar reserva.");
+                alert(`Error al reservar Pilates: ${err.message}`);
             }
         }
     </script>
