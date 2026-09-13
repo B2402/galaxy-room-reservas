@@ -448,12 +448,9 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    bicicleta: String(biciSeleccionada), // String para ReservaSchema
                     nombre: nombre,
-                    telefono: telefono,
-                    modalidad: modalidad,
-                    clase_id: parseInt(selectClase.value),
-                    bicicleta: String(biciSeleccionada), // Se envía en String para evitar error de validación Pydantic
-                    bici_numero: parseInt(biciSeleccionada)
+                    telefono: telefono
                 })
             });
 
@@ -495,13 +492,14 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    nombre,
-                    telefono,
+                    nombre: nombre,
+                    telefono: telefono,
                     fecha_nacimiento: fechaNacimiento,
-                    paquete,
-                    fruta,
-                    bebida,
-                    personaje
+                    paquete: paquete,
+                    cama: "", // Coincide exactamente con el schema de ReservaPilatesSchema
+                    fruta: fruta,
+                    bebida: bebida,
+                    personaje: personaje
                 })
             });
 
