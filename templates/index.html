@@ -97,6 +97,39 @@
             <p class="text-xs text-purple-300 font-bold tracking-[0.2em] mt-1 uppercase">ROOM • LA PIEDAD</p>
         </header>
 
+        <!-- TABLA COMPARATIVA DE PLANES -->
+        <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
+            <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">Resumen de Modalidades</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-slate-400">
+                            <th class="py-2 px-1">Modalidad</th>
+                            <th class="py-2 px-1">Sesiones</th>
+                            <th class="py-2 px-1 text-right">Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 text-slate-200">
+                        <tr>
+                            <td class="py-2 px-1 font-semibold text-cyan-300">Clase Individual</td>
+                            <td class="py-2 px-1">1 Sesión</td>
+                            <td class="py-2 px-1 text-right font-bold">$50 MXN</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-1 font-semibold text-cyan-300">Mensualidad Promo</td>
+                            <td class="py-2 px-1">3+1/sem</td>
+                            <td class="py-2 px-1 text-right font-bold">$500 MXN</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-1 font-semibold text-purple-300">Mensual Ilimitada</td>
+                            <td class="py-2 px-1">Ilimitadas</td>
+                            <td class="py-2 px-1 text-right font-bold">$700 MXN</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- VISTA SPINNING -->
         <div id="vistaSpinning">
             <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
@@ -411,7 +444,6 @@
         }
 
         try {
-            // Se envían 'bicicleta' y 'bici_numero' para asegurar compatibilidad con la API
             const res = await fetch('/api/reservar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -439,8 +471,6 @@
                 throw new Error(mensajeDetalle);
             }
 
-            alert("¡Reserva registrada con éxito!");
-
             const mensaje = `Hola! Realicé mi reserva para Spinning Galaxy Room:\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
                 `📞 *Teléfono:* ${telefono}\n` +
@@ -448,8 +478,10 @@
                 `💳 *Modalidad:* ${modalidad}\n\n` +
                 `Adjunto mi comprobante de pago.`;
 
-            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
-            cargarBicisDisponibles();
+            const urlWhatsapp = `https://api.whatsapp.com/send?phone=${NUMERO_ADMIN_WHATSAPP}&text=${encodeURIComponent(mensaje)}`;
+            
+            // FIX REDIRECCIÓN A WHATSAPP SIN BLOQUEO DE POPUP
+            window.location.href = urlWhatsapp;
 
         } catch (err) {
             alert(`Error al reservar:\n${err.message}`);
@@ -495,8 +527,6 @@
                 throw new Error(mensajeDetalle);
             }
 
-            alert("¡Reserva de Pilates registrada con éxito!");
-
             const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
                 `📞 *Teléfono:* ${telefono}\n` +
@@ -506,7 +536,10 @@
                 (personaje ? `⭐ *Temática:* ${personaje}\n` : '') +
                 `\nAdjunto mi comprobante de pago.`;
 
-            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+            const urlWhatsapp = `https://api.whatsapp.com/send?phone=${NUMERO_ADMIN_WHATSAPP}&text=${encodeURIComponent(mensaje)}`;
+            
+            // FIX REDIRECCIÓN A WHATSAPP SIN BLOQUEO DE POPUP
+            window.location.href = urlWhatsapp;
 
         } catch (err) {
             alert(`Error al reservar Pilates:\n${err.message}`);
