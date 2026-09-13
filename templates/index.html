@@ -69,7 +69,7 @@
 <body class="p-4 max-w-md mx-auto min-h-screen flex flex-col justify-between">
 
     <div>
-        <!-- SELECTOR DE SALS -->
+        <!-- SELECTOR DE SALAS -->
         <div class="w-full mb-4 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl p-3 shadow-xl flex items-center justify-between">
             <label for="selectorSala" class="text-xs font-bold uppercase tracking-wider text-cyan-400">
                 Experiencia:
@@ -97,7 +97,7 @@
             <p class="text-xs text-purple-300 font-bold tracking-[0.2em] mt-1 uppercase">ROOM • LA PIEDAD</p>
         </header>
 
-        <!-- VISTA SPINNING (Intacta con su selección de bici) -->
+        <!-- VISTA SPINNING -->
         <div id="vistaSpinning">
             <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
                 <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">1. Tus Datos</h2>
@@ -125,7 +125,7 @@
                 </div>
             </section>
 
-            <!-- SELECCIÓN DE BICICLETAS EN SPINNING -->
+            <!-- SELECCIÓN DE BICICLETAS EN SPINNING (DISTRIBUCIÓN REAL DE 10 BICIS) -->
             <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">3. Elige tu Bicicleta</h2>
@@ -136,8 +136,8 @@
                     🎧 COACH / ESCENARIO 🎧
                 </div>
 
-                <div id="gridBicis" class="grid grid-cols-4 gap-2 mb-3">
-                    <!-- Generado dinámicamente -->
+                <div id="gridBicis" class="space-y-3 mb-4">
+                    <!-- Generado dinámicamente: Fila Frente (1-2), Centro (3-6), Atrás (7-10) -->
                 </div>
 
                 <div class="flex justify-center space-x-4 text-[10px] text-slate-400 font-medium">
@@ -179,7 +179,7 @@
             </button>
         </div>
 
-        <!-- VISTA PILATES (SIN CAMAS / RESERVA DIRECTA) -->
+        <!-- VISTA PILATES -->
         <div id="vistaPilates" class="hidden">
             <form id="formPilates" onsubmit="confirmarReservaPilates(event)" class="space-y-5 mb-8">
                 <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-3">
@@ -347,21 +347,45 @@
             const grid = document.getElementById('gridBicis');
             grid.innerHTML = '';
 
-            for (let i = 1; i <= 16; i++) {
-                const ocupada = bicisOcupadas.includes(i);
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `bici-btn py-3 rounded-lg font-extrabold text-sm flex flex-col items-center justify-center gap-1 ${ocupada ? 'ocupada' : ''}`;
-                btn.innerHTML = `<span>🚲</span><span>${i}</span>`;
-                
-                if (ocupada) {
-                    btn.disabled = true;
-                } else {
-                    btn.onclick = () => seleccionarBici(i, btn);
-                }
+            // Definición exacta de las 10 bicis organizadas por filas
+            const filas = [
+                { nombre: "FRENTE", bicis: [1, 2] },
+                { nombre: "CENTRO", bicis: [3, 4, 5, 6] },
+                { nombre: "ATRÁS", bicis: [7, 8, 9, 10] }
+            ];
 
-                grid.appendChild(btn);
-            }
+            filas.forEach(fila => {
+                const filaDiv = document.createElement('div');
+                
+                const tituloFila = document.createElement('p');
+                tituloFila.className = "text-center text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase";
+                tituloFila.innerText = fila.nombre;
+                filaDiv.appendChild(tituloFila);
+
+                const contenedorBicis = document.createElement('div');
+                contenedorBicis.className = fila.bicis.length === 2 
+                    ? "flex justify-center gap-2 max-w-[180px] mx-auto" 
+                    : "grid grid-cols-4 gap-2";
+
+                fila.bicis.forEach(numero => {
+                    const ocupada = bicisOcupadas.includes(numero);
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `bici-btn ${fila.bicis.length === 2 ? 'w-20' : 'w-full'} py-3 rounded-lg font-extrabold text-sm flex flex-col items-center justify-center gap-1 ${ocupada ? 'ocupada' : ''}`;
+                    btn.innerHTML = `<span>🚲</span><span>${numero}</span>`;
+                    
+                    if (ocupada) {
+                        btn.disabled = true;
+                    } else {
+                        btn.onclick = () => seleccionarBici(numero, btn);
+                    }
+
+                    contenedorBicis.appendChild(btn);
+                });
+
+                filaDiv.appendChild(contenedorBicis);
+                grid.appendChild(filaDiv);
+            });
         }
 
         function seleccionarBici(numero, elemento) {
