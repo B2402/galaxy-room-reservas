@@ -258,242 +258,259 @@
     </button>
 
     <script>
-        const NUMERO_ADMIN_WHATSAPP = "523522083263";
-        let biciSeleccionada = null;
-        let bicisOcupadas = [];
+    const NUMERO_ADMIN_WHATSAPP = "523522083263";
+    let biciSeleccionada = null;
+    let bicisOcupadas = [];
 
-        document.addEventListener("DOMContentLoaded", () => {
-            if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
-                document.getElementById('btnResetAdmin').classList.remove('hidden');
-            }
-            cargarClases();
-        });
-
-        function copiarClabe(clabe) {
-            navigator.clipboard.writeText(clabe);
-            alert("¡CLABE copiada al portapapeles!");
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
+            document.getElementById('btnResetAdmin').classList.remove('hidden');
         }
+        cargarClases();
+    });
 
-        function cambiarSeccion(valor) {
-            const vistaSpinning = document.getElementById('vistaSpinning');
-            const vistaPilates = document.getElementById('vistaPilates');
-            const headerTitulo = document.getElementById('headerTitulo');
-            const logoSpinning = document.getElementById('logoSpinning');
-            const logoPilates = document.getElementById('logoPilates');
-            const contenedorLogo = document.getElementById('contenedorLogo');
+    function copiarClabe(clabe) {
+        navigator.clipboard.writeText(clabe);
+        alert("¡CLABE copiada al portapapeles!");
+    }
 
-            if (valor === 'spinning') {
-                document.body.classList.remove('bg-pilates-mode');
-                vistaSpinning.classList.remove('hidden');
-                vistaPilates.classList.add('hidden');
-                
-                headerTitulo.innerText = "Spinning Galaxy";
-                headerTitulo.className = "text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider";
+    function cambiarSeccion(valor) {
+        const vistaSpinning = document.getElementById('vistaSpinning');
+        const vistaPilates = document.getElementById('vistaPilates');
+        const headerTitulo = document.getElementById('headerTitulo');
+        const logoSpinning = document.getElementById('logoSpinning');
+        const logoPilates = document.getElementById('logoPilates');
+        const contenedorLogo = document.getElementById('contenedorLogo');
 
-                logoSpinning.classList.remove('hidden');
-                logoPilates.classList.add('hidden');
-                contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
-            } else {
-                document.body.classList.add('bg-pilates-mode');
-                vistaSpinning.classList.add('hidden');
-                vistaPilates.classList.remove('hidden');
-                
-                headerTitulo.innerText = "Pilates Studio";
-                headerTitulo.className = "text-3xl font-black text-purple-400 glow-pilates uppercase tracking-wider";
-
-                logoSpinning.classList.add('hidden');
-                logoPilates.classList.remove('hidden');
-                contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-1 border-2 border-purple-400 shadow-xl shadow-purple-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
-            }
-        }
-
-        async function cargarClases() {
-            try {
-                const res = await fetch('/clases');
-                const clases = await res.json();
-                const select = document.getElementById('select-clase');
-                select.innerHTML = '';
-                clases.forEach(c => {
-                    select.innerHTML += `<option value="${c.id}">${c.dia} - ${c.hora} | ${c.modalidad} (${c.coach})</option>`;
-                });
-                if (clases.length > 0) {
-                    cargarBicisDisponibles();
-                }
-            } catch (err) {
-                console.error("Error cargando clases:", err);
-            }
-        }
-
-        async function cargarBicisDisponibles() {
-            const claseId = document.getElementById('select-clase').value;
-            if (!claseId) return;
-
-            biciSeleccionada = null;
-            document.getElementById('biciSeleccionadaTexto').innerText = "Ninguna";
-
-            try {
-                const res = await fetch(`/api/reservas/${claseId}`);
-                const data = await res.json();
-                bicisOcupadas = data.bicis_ocupadas || [];
-                renderGridBicis();
-            } catch (err) {
-                console.error("Error al cargar ocupación de bicis:", err);
-                bicisOcupadas = [];
-                renderGridBicis();
-            }
-        }
-
-        function renderGridBicis() {
-            const grid = document.getElementById('gridBicis');
-            grid.innerHTML = '';
-
-            // Definición exacta de las 10 bicis organizadas por filas
-            const filas = [
-                { nombre: "FRENTE", bicis: [1, 2] },
-                { nombre: "CENTRO", bicis: [3, 4, 5, 6] },
-                { nombre: "ATRÁS", bicis: [7, 8, 9, 10] }
-            ];
-
-            filas.forEach(fila => {
-                const filaDiv = document.createElement('div');
-                
-                const tituloFila = document.createElement('p');
-                tituloFila.className = "text-center text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase";
-                tituloFila.innerText = fila.nombre;
-                filaDiv.appendChild(tituloFila);
-
-                const contenedorBicis = document.createElement('div');
-                contenedorBicis.className = fila.bicis.length === 2 
-                    ? "flex justify-center gap-2 max-w-[180px] mx-auto" 
-                    : "grid grid-cols-4 gap-2";
-
-                fila.bicis.forEach(numero => {
-                    const ocupada = bicisOcupadas.includes(numero);
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = `bici-btn ${fila.bicis.length === 2 ? 'w-20' : 'w-full'} py-3 rounded-lg font-extrabold text-sm flex flex-col items-center justify-center gap-1 ${ocupada ? 'ocupada' : ''}`;
-                    btn.innerHTML = `<span>🚲</span><span>${numero}</span>`;
-                    
-                    if (ocupada) {
-                        btn.disabled = true;
-                    } else {
-                        btn.onclick = () => seleccionarBici(numero, btn);
-                    }
-
-                    contenedorBicis.appendChild(btn);
-                });
-
-                filaDiv.appendChild(contenedorBicis);
-                grid.appendChild(filaDiv);
-            });
-        }
-
-        function seleccionarBici(numero, elemento) {
-            document.querySelectorAll('.bici-btn').forEach(b => b.classList.remove('seleccionada'));
-            biciSeleccionada = numero;
-            elemento.classList.add('seleccionada');
-            document.getElementById('biciSeleccionadaTexto').innerText = `Bici #${numero}`;
-        }
-
-        async function confirmarReserva() {
-            const nombre = document.getElementById('nombre').value.trim();
-            const telefono = document.getElementById('telefono').value.trim();
-            const selectClase = document.getElementById('select-clase');
-            const modalidad = document.getElementById('select-modalidad-spinning').value;
+        if (valor === 'spinning') {
+            document.body.classList.remove('bg-pilates-mode');
+            vistaSpinning.classList.remove('hidden');
+            vistaPilates.classList.add('hidden');
             
-            if (!nombre || !telefono) {
-                alert("Por favor completa tu nombre y número de teléfono.");
-                return;
-            }
+            headerTitulo.innerText = "Spinning Galaxy";
+            headerTitulo.className = "text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider";
 
-            if (!biciSeleccionada) {
-                alert("Por favor selecciona tu bicicleta.");
-                return;
-            }
+            logoSpinning.classList.remove('hidden');
+            logoPilates.classList.add('hidden');
+            contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+        } else {
+            document.body.classList.add('bg-pilates-mode');
+            vistaSpinning.classList.add('hidden');
+            vistaPilates.classList.remove('hidden');
+            
+            headerTitulo.innerText = "Pilates Studio";
+            headerTitulo.className = "text-3xl font-black text-purple-400 glow-pilates uppercase tracking-wider";
 
-            try {
-                const res = await fetch('/api/reservar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nombre: nombre,
-                        telefono: telefono,
-                        modalidad: modalidad,
-                        clase_id: selectClase.value,
-                        bici_numero: biciSeleccionada
-                    })
-                });
+            logoSpinning.classList.add('hidden');
+            logoPilates.classList.remove('hidden');
+            contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-1 border-2 border-purple-400 shadow-xl shadow-purple-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+        }
+    }
 
-                const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.detail || "Error al procesar la reserva");
-                }
-
-                alert("¡Reserva registrada con éxito!");
-
-                const mensaje = `Hola! Realicé mi reserva para Spinning Galaxy Room:\n\n` +
-                    `👤 *Nombre:* ${nombre}\n` +
-                    `📞 *Teléfono:* ${telefono}\n` +
-                    `🚲 *Bicicleta:* #${biciSeleccionada}\n` +
-                    `💳 *Modalidad:* ${modalidad}\n\n` +
-                    `Adjunto mi comprobante de pago.`;
-
-                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    async function cargarClases() {
+        try {
+            const res = await fetch('/clases');
+            const clases = await res.json();
+            const select = document.getElementById('select-clase');
+            select.innerHTML = '';
+            clases.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.dia} - ${c.hora} | ${c.modalidad} (${c.coach})</option>`;
+            });
+            if (clases.length > 0) {
                 cargarBicisDisponibles();
-
-            } catch (err) {
-                alert(`Error al reservar: ${err.message}`);
             }
+        } catch (err) {
+            console.error("Error cargando clases:", err);
         }
+    }
 
-        async function confirmarReservaPilates(event) {
-            event.preventDefault();
+    async function cargarBicisDisponibles() {
+        const claseId = document.getElementById('select-clase').value;
+        if (!claseId) return;
 
-            const nombre = document.getElementById('nombrePilates').value.trim();
-            const telefono = document.getElementById('telPilates').value.trim();
-            const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
-            const paquete = document.getElementById('paquetePilates').value;
-            const fruta = document.getElementById('fruta').value.trim();
-            const bebida = document.getElementById('bebida').value.trim();
-            const personaje = document.getElementById('personaje').value.trim();
+        biciSeleccionada = null;
+        document.getElementById('biciSeleccionadaTexto').innerText = "Ninguna";
 
-            try {
-                const res = await fetch('/api/pilates/reservar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nombre,
-                        telefono,
-                        fecha_nacimiento: fechaNacimiento,
-                        paquete,
-                        fruta,
-                        bebida,
-                        personaje
-                    })
-                });
+        try {
+            const res = await fetch(`/api/reservas/${claseId}`);
+            const data = await res.json();
+            bicisOcupadas = data.bicis_ocupadas || [];
+            renderGridBicis();
+        } catch (err) {
+            console.error("Error al cargar ocupación de bicis:", err);
+            bicisOcupadas = [];
+            renderGridBicis();
+        }
+    }
 
-                const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.detail || "Error al registrar la reserva de Pilates.");
+    function renderGridBicis() {
+        const grid = document.getElementById('gridBicis');
+        grid.innerHTML = '';
+
+        const filas = [
+            { nombre: "FRENTE", bicis: [1, 2] },
+            { nombre: "CENTRO", bicis: [3, 4, 5, 6] },
+            { nombre: "ATRÁS", bicis: [7, 8, 9, 10] }
+        ];
+
+        filas.forEach(fila => {
+            const filaDiv = document.createElement('div');
+            
+            const tituloFila = document.createElement('p');
+            tituloFila.className = "text-center text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase";
+            tituloFila.innerText = fila.nombre;
+            filaDiv.appendChild(tituloFila);
+
+            const contenedorBicis = document.createElement('div');
+            contenedorBicis.className = fila.bicis.length === 2 
+                ? "flex justify-center gap-2 max-w-[180px] mx-auto" 
+                : "grid grid-cols-4 gap-2";
+
+            fila.bicis.forEach(numero => {
+                const ocupada = bicisOcupadas.includes(numero);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `bici-btn ${fila.bicis.length === 2 ? 'w-20' : 'w-full'} py-3 rounded-lg font-extrabold text-sm flex flex-col items-center justify-center gap-1 ${ocupada ? 'ocupada' : ''}`;
+                btn.innerHTML = `<span>🚲</span><span>${numero}</span>`;
+                
+                if (ocupada) {
+                    btn.disabled = true;
+                } else {
+                    btn.onclick = () => seleccionarBici(numero, btn);
                 }
 
-                alert("¡Reserva de Pilates registrada con éxito!");
+                contenedorBicis.appendChild(btn);
+            });
 
-                const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
-                    `👤 *Nombre:* ${nombre}\n` +
-                    `📞 *Teléfono:* ${telefono}\n` +
-                    `📦 *Paquete:* ${paquete}\n` +
-                    (fruta ? `🍎 *Fruta:* ${fruta}\n` : '') +
-                    (bebida ? `🥤 *Bebida:* ${bebida}\n` : '') +
-                    (personaje ? `⭐ *Temática:* ${personaje}\n` : '') +
-                    `\nAdjunto mi comprobante de pago.`;
+            filaDiv.appendChild(contenedorBicis);
+            grid.appendChild(filaDiv);
+        });
+    }
 
-                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    function seleccionarBici(numero, elemento) {
+        document.querySelectorAll('.bici-btn').forEach(b => b.classList.remove('seleccionada'));
+        biciSeleccionada = numero;
+        elemento.classList.add('seleccionada');
+        document.getElementById('biciSeleccionadaTexto').innerText = `Bici #${numero}`;
+    }
 
-            } catch (err) {
-                alert(`Error al reservar Pilates: ${err.message}`);
-            }
+    async function confirmarReserva() {
+        const nombre = document.getElementById('nombre').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        const selectClase = document.getElementById('select-clase');
+        const modalidad = document.getElementById('select-modalidad-spinning').value;
+        
+        if (!nombre || !telefono) {
+            alert("Por favor completa tu nombre y número de teléfono.");
+            return;
         }
-    </script>
-</body>
-</html>
+
+        if (!biciSeleccionada) {
+            alert("Por favor selecciona tu bicicleta.");
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/reservar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    telefono: telefono,
+                    modalidad: modalidad,
+                    clase_id: parseInt(selectClase.value),
+                    bici_numero: parseInt(biciSeleccionada)
+                })
+            });
+
+            const data = await res.json();
+            
+            if (!res.ok) {
+                // Maneja si el detalle es una lista u objeto de validación
+                let mensajeDetalle = "Error al procesar la reserva";
+                if (typeof data.detail === 'string') {
+                    mensajeDetalle = data.detail;
+                } else if (Array.isArray(data.detail)) {
+                    mensajeDetalle = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join('\n');
+                } else if (typeof data.detail === 'object') {
+                    mensajeDetalle = JSON.stringify(data.detail);
+                }
+                throw new Error(mensajeDetalle);
+            }
+
+            alert("¡Reserva registrada con éxito!");
+
+            const mensaje = `Hola! Realicé mi reserva para Spinning Galaxy Room:\n\n` +
+                `👤 *Nombre:* ${nombre}\n` +
+                `📞 *Teléfono:* ${telefono}\n` +
+                `🚲 *Bicicleta:* #${biciSeleccionada}\n` +
+                `💳 *Modalidad:* ${modalidad}\n\n` +
+                `Adjunto mi comprobante de pago.`;
+
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+            cargarBicisDisponibles();
+
+        } catch (err) {
+            alert(`Error al reservar:\n${err.message}`);
+        }
+    }
+
+    async function confirmarReservaPilates(event) {
+        event.preventDefault();
+
+        const nombre = document.getElementById('nombrePilates').value.trim();
+        const telefono = document.getElementById('telPilates').value.trim();
+        const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
+        const paquete = document.getElementById('paquetePilates').value;
+        const fruta = document.getElementById('fruta').value.trim();
+        const bebida = document.getElementById('bebida').value.trim();
+        const personaje = document.getElementById('personaje').value.trim();
+
+        try {
+            const res = await fetch('/api/pilates/reservar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre,
+                    telefono,
+                    fecha_nacimiento: fechaNacimiento,
+                    paquete,
+                    fruta,
+                    bebida,
+                    personaje
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                let mensajeDetalle = "Error al registrar la reserva de Pilates";
+                if (typeof data.detail === 'string') {
+                    mensajeDetalle = data.detail;
+                } else if (Array.isArray(data.detail)) {
+                    mensajeDetalle = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join('\n');
+                } else if (typeof data.detail === 'object') {
+                    mensajeDetalle = JSON.stringify(data.detail);
+                }
+                throw new Error(mensajeDetalle);
+            }
+
+            alert("¡Reserva de Pilates registrada con éxito!");
+
+            const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
+                `👤 *Nombre:* ${nombre}\n` +
+                `📞 *Teléfono:* ${telefono}\n` +
+                `📦 *Paquete:* ${paquete}\n` +
+                (fruta ? `🍎 *Fruta:* ${fruta}\n` : '') +
+                (bebida ? `🥤 *Bebida:* ${bebida}\n` : '') +
+                (personaje ? `⭐ *Temática:* ${personaje}\n` : '') +
+                `\nAdjunto mi comprobante de pago.`;
+
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+
+        } catch (err) {
+            alert(`Error al reservar Pilates:\n${err.message}`);
+        }
+    }
+</script>
+    
+       
