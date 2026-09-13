@@ -11,7 +11,7 @@ from supabase import create_client, Client
 BASE_DIR = Path(__file__).resolve().parent
 
 # --- CONFIGURACIÓN DE SUPABASE ---
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pjatimqcgmnsnkmjspqi.supabase.co")  # Reemplaza con tu Project URL si no usas variables de entorno
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pjatimqcgmnsnkmjspqi.supabase.co")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_KqE4UPVn2JYKnAudq6RV2w_GwhJj_vu")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -19,6 +19,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = FastAPI(title="Spinning & Pilates Galaxy Room")
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
+# --- ESQUEMAS DE DATOS ---
 
 class ReservaSchema(BaseModel):
     bicicleta: str
@@ -63,11 +65,12 @@ async def registrar_reserva(reserva: ReservaSchema):
     
     return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
 
-# --- ENDPOINTS PILATES ---
+# --- ENDPOINTS PILATES (ESTÁNDAR) ---
 
 @app.get("/api/pilates/reservas")
 @app.get("/api/reservas-pilates")
 async def obtener_reservas_pilates(paquete: Optional[str] = None):
+    # Consulta estándar sin importar promociones pasadas
     res = supabase.table("reservas_pilates").select("cama").execute()
     
     camas = []
@@ -92,7 +95,7 @@ async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
     supabase.table("reservas_pilates").insert(nueva_reserva).execute()
     return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
 
-# --- ENDPOINT DE LIMPIEZA MANUAL (TU OPCION Y LA DE TU TIA) ---
+# --- ENDPOINT DE LIMPIEZA MANUAL ---
 
 @app.post("/api/admin/limpiar")
 async def limpiar_todo(tipo: str = "todas"):
@@ -138,4 +141,3 @@ async def obtener_clases():
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-   
