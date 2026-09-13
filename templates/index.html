@@ -452,24 +452,17 @@
                     telefono: telefono,
                     modalidad: modalidad,
                     clase_id: parseInt(selectClase.value),
-                    bicicleta: parseInt(biciSeleccionada),
+                    bicicleta: String(biciSeleccionada), // Se envía en String para evitar error de validación Pydantic
                     bici_numero: parseInt(biciSeleccionada)
                 })
             });
 
-            const data = await res.json();
-            
             if (!res.ok) {
-                let mensajeDetalle = "Error al procesar la reserva";
-                if (typeof data.detail === 'string') {
-                    mensajeDetalle = data.detail;
-                } else if (Array.isArray(data.detail)) {
-                    mensajeDetalle = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join('\n');
-                } else if (typeof data.detail === 'object') {
-                    mensajeDetalle = JSON.stringify(data.detail);
-                }
-                throw new Error(mensajeDetalle);
+                const textError = await res.text();
+                throw new Error(textError || `Error ${res.status} al procesar reserva`);
             }
+
+            const data = await res.json();
 
             const mensaje = `Hola! Realicé mi reserva para Spinning Galaxy Room:\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
@@ -479,8 +472,6 @@
                 `Adjunto mi comprobante de pago.`;
 
             const urlWhatsapp = `https://api.whatsapp.com/send?phone=${NUMERO_ADMIN_WHATSAPP}&text=${encodeURIComponent(mensaje)}`;
-            
-            // FIX REDIRECCIÓN A WHATSAPP SIN BLOQUEO DE POPUP
             window.location.href = urlWhatsapp;
 
         } catch (err) {
@@ -514,18 +505,12 @@
                 })
             });
 
-            const data = await res.json();
             if (!res.ok) {
-                let mensajeDetalle = "Error al registrar la reserva de Pilates";
-                if (typeof data.detail === 'string') {
-                    mensajeDetalle = data.detail;
-                } else if (Array.isArray(data.detail)) {
-                    mensajeDetalle = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join('\n');
-                } else if (typeof data.detail === 'object') {
-                    mensajeDetalle = JSON.stringify(data.detail);
-                }
-                throw new Error(mensajeDetalle);
+                const textError = await res.text();
+                throw new Error(textError || `Error ${res.status} del servidor al reservar Pilates`);
             }
+
+            const data = await res.json();
 
             const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
@@ -537,8 +522,6 @@
                 `\nAdjunto mi comprobante de pago.`;
 
             const urlWhatsapp = `https://api.whatsapp.com/send?phone=${NUMERO_ADMIN_WHATSAPP}&text=${encodeURIComponent(mensaje)}`;
-            
-            // FIX REDIRECCIÓN A WHATSAPP SIN BLOQUEO DE POPUP
             window.location.href = urlWhatsapp;
 
         } catch (err) {
