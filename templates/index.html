@@ -450,7 +450,9 @@
     async function confirmarReserva() {
         const nombre = document.getElementById('nombre').value.trim();
         const telefono = document.getElementById('telefono').value.trim();
-        const claseId = document.getElementById('select-clase').value;
+        const claseSelect = document.getElementById('select-clase');
+        const claseId = claseSelect.value;
+        const textoClaseSeleccionada = claseSelect.options[claseSelect.selectedIndex].text;
         const modalidad = document.getElementById('select-modalidad-spinning').value;
 
         if (!nombre || !telefono) {
@@ -482,7 +484,7 @@
 
             alert(result.mensaje);
             
-            const textoWs = encodeURIComponent(`Hola! Acabo de reservar la Bicicleta #${biciSeleccionada} para la clase. Mi nombre es ${nombre}. Adjunto mi comprobante de pago.`);
+            const textoWs = encodeURIComponent(`Hola! Acabo de reservar la Bicicleta #${biciSeleccionada} para la clase de *${textoClaseSeleccionada}*. Modalidad: *${modalidad}*. Mi nombre es ${nombre}. Adjunto mi comprobante de pago.`);
             window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
 
             location.reload();
