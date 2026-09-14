@@ -177,7 +177,7 @@ async def obtener_clases():
         {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Just Ride", "coach": "Coquis"},
         {"id": 12, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Just Ride", "coach": "Mayra"},
         {"id": 13, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Just Ride", "coach": "Coquis"},
-        {"id": 14, "dia": "Viernes", "hora": "07:15 PM", "modalidad": "TEMATICA"}
+        {"id": 14, "dia": "Viernes", "hora": "07:15 PM", "modalidad": "Libre", "coach": "TEMATICA"}
     ]
 
 if __name__ == "__main__":
