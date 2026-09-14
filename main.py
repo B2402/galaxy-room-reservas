@@ -34,7 +34,6 @@ class ReservaPilatesSchema(BaseModel):
     telefono: str
     fecha_nacimiento: str
     paquete: Optional[str] = ""
-    cama: Optional[str] = ""
     fruta: Optional[str] = ""
     bebida: Optional[str] = ""
     personaje: Optional[str] = ""
@@ -95,32 +94,10 @@ async def registrar_reserva(reserva: ReservaSchema):
         raise HTTPException(status_code=500, detail=f"Error en servidor al guardar: {str(e)}")
 
 # --- ENDPOINTS PILATES ---
-
-@app.get("/api/pilates/reservas")
-@app.get("/api/reservas-pilates")
-async def obtener_reservas_pilates(paquete: Optional[str] = None):
+      @app.post("/api/pilates/reservar")
+      @app.post("/api/reservas-pilates")
+     async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
     try:
-        res = supabase.table("reservas_pilates").select("cama").execute()
-        camas = []
-        for r in res.data:
-            cama_val = r.get("cama")
-            if cama_val is not None and str(cama_val).isdigit():
-                camas.append(int(cama_val))
-        return {"camas_ocupadas": camas, "ocupadas": camas}
-    except Exception as e:
-        return {"camas_ocupadas": [], "ocupadas": []}
-
-@app.post("/api/pilates/reservar")
-@app.post("/api/reservas-pilates")
-async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
-    try:
-        cama_id = str(reserva.cama).strip() if reserva.cama else ""
-
-        if cama_id:
-            check = supabase.table("reservas_pilates").select("id").eq("cama", cama_id).execute()
-            if check.data:
-                raise HTTPException(status_code=400, detail=f"La cama #{cama_id} ya se encuentra reservada.")
-
         nueva_reserva = reserva.dict()
         supabase.table("reservas_pilates").insert(nueva_reserva).execute()
         return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
