@@ -92,11 +92,11 @@ async def registrar_reserva(reserva: ReservaSchema):
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=f"Error en servidor al guardar: {str(e)}")
-
-# --- ENDPOINTS PILATES ---
-      @app.post("/api/pilates/reservar")
-      @app.post("/api/reservas-pilates")
-     async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
+        
+   # --- ENDPOINTS PILATES ---
+@app.post("/api/pilates/reservar")
+@app.post("/api/reservas-pilates")
+async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
     try:
         nueva_reserva = reserva.dict()
         supabase.table("reservas_pilates").insert(nueva_reserva).execute()
