@@ -311,6 +311,142 @@
     </button>
 
     <script>
+    const NUMERO_ADMIN_WHATSAPP = "523522083263";
+    let biciSeleccionada = null;
+    let bicisOcupadas = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
+            document.getElementById('btnResetAdmin').classList.remove('hidden');
+        }
+        cargarClases(); // <-- ¡Esta era la línea faltante que cargaba todo al iniciar!
+    });
+
+    function copiarClabe(clabe) {
+        navigator.clipboard.writeText(clabe);
+        alert("¡CLABE copiada al portapapeles!");
+    }
+
+    function cambiarSeccion(valor) {
+        const vistaSpinning = document.getElementById('vistaSpinning');
+        const vistaPilates = document.getElementById('vistaPilates');
+        const headerTitulo = document.getElementById('headerTitulo');
+        const logoSpinning = document.getElementById('logoSpinning');
+        const logoPilates = document.getElementById('logoPilates');
+        const contenedorLogo = document.getElementById('contenedorLogo');
+
+        if (valor === 'spinning') {
+            document.body.classList.remove('bg-pilates-mode');
+            vistaSpinning.classList.remove('hidden');
+            vistaPilates.classList.add('hidden');
+            
+            headerTitulo.innerText = "Spinning Galaxy";
+            headerTitulo.className = "text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider";
+
+            logoSpinning.classList.remove('hidden');
+            logoPilates.classList.add('hidden');
+            contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+        } else {
+            document.body.classList.add('bg-pilates-mode');
+            vistaSpinning.classList.add('hidden');
+            vistaPilates.classList.remove('hidden');
+            
+            headerTitulo.innerText = "Pilates Studio";
+            headerTitulo.className = "text-3xl font-black text-purple-400 glow-pilates uppercase tracking-wider";
+
+            logoSpinning.classList.add('hidden');
+            logoPilates.classList.remove('hidden');
+            contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-1 border-2 border-purple-400 shadow-xl shadow-purple-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+        }
+    }
+
+    async function cargarClases() {
+        try {
+            const res = await fetch('/clases');
+            const clases = await res.json();
+            const select = document.getElementById('select-clase');
+            select.innerHTML = '';
+            clases.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.dia} - ${c.hora} | ${c.modalidad} (${c.coach})</option>`;
+            });
+            if (clases.length > 0) {
+                cargarBicisDisponibles();
+            }
+        } catch (err) {
+            console.error("Error cargando clases:", err);
+        }
+    }
+
+    async function cargarBicisDisponibles() {
+        const claseId = document.getElementById('select-clase').value;
+        if (!claseId) return;
+
+        biciSeleccionada = null;
+        document.getElementById('biciSeleccionadaTexto').innerText = "Ninguna";
+
+        try {
+            const res = await fetch(`/api/reservas/${claseId}`);
+            const data = await res.json();
+            bicisOcupadas = data.bicis_ocupadas || [];
+            renderGridBicis();
+        } catch (err) {
+            console.error("Error al cargar ocupación de bicis:", err);
+            bicisOcupadas = [];
+            renderGridBicis();
+        }
+    }
+
+    function renderGridBicis() {
+        const grid = document.getElementById('gridBicis');
+        grid.innerHTML = '';
+
+        const filas = [
+            { nombre: "FRENTE", bicis: [1, 2] },
+            { nombre: "CENTRO", bicis: [3, 4, 5, 6] },
+            { nombre: "ATRÁS", bicis: [7, 8, 9, 10] }
+        ];
+
+        filas.forEach(fila => {
+            const filaDiv = document.createElement('div');
+            
+            const tituloFila = document.createElement('p');
+            tituloFila.className = "text-center text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase";
+            tituloFila.innerText = fila.nombre;
+            filaDiv.appendChild(tituloFila);
+
+            const contenedorBicis = document.createElement('div');
+            contenedorBicis.className = fila.bicis.length === 2 
+                ? "flex justify-center gap-2 max-w-[180px] mx-auto" 
+                : "grid grid-cols-4 gap-2";
+
+            fila.bicis.forEach(numero => {
+                const ocupada = bicisOcupadas.includes(numero);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `bici-btn ${fila.bicis.length === 2 ? 'w-20' : 'w-full'} py-3 rounded-lg font-extrabold text-sm flex flex-col items-center justify-center gap-1 ${ocupada ? 'ocupada' : ''}`;
+                btn.innerHTML = `<span>🚲</span><span>${numero}</span>`;
+                
+                if (ocupada) {
+                    btn.disabled = true;
+                } else {
+                    btn.onclick = () => seleccionarBici(numero, btn);
+                }
+
+                contenedorBicis.appendChild(btn);
+            });
+
+            filaDiv.appendChild(contenedorBicis);
+            grid.appendChild(filaDiv);
+        });
+    }
+
+    function seleccionarBici(numero, elemento) {
+        document.querySelectorAll('.bici-btn').forEach(b => b.classList.remove('seleccionada'));
+        biciSeleccionada = numero;
+        elemento.classList.add('seleccionada');
+        document.getElementById('biciSeleccionadaTexto').innerText = `Bici #${numero}`;
+    }
+
     async function confirmarReserva() {
         const nombre = document.getElementById('nombre').value.trim();
         const telefono = document.getElementById('telefono').value.trim();
@@ -348,7 +484,7 @@
 
             alert(result.mensaje);
             
-            // MENSAJE DE WHATSAPP ACTUALIZADO PARA SPINNING (Con tipo, teléfono, nombre, bici, clase y modalidad)
+            // Mensaje de WhatsApp completo con todos los datos de Spinning
             const textoWs = encodeURIComponent(
                 `*NUEVA RESERVA - SPINNING GALAXY ROOM*\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
@@ -400,7 +536,7 @@
 
             alert(result.mensaje);
 
-            // MENSAJE DE WHATSAPP ACTUALIZADO PARA PILATES (Con todos los detalles recopilados)
+            // Mensaje de WhatsApp completo con todos los datos de Pilates
             const textoWs = encodeURIComponent(
                 `*NUEVA RESERVA - PILATES STUDIO*\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
@@ -415,6 +551,38 @@
             );
             window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
 
+            location.reload();
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
+    async function cancelarCita() {
+        const telefono = document.getElementById('telCancelar').value.trim();
+        const tipo = document.getElementById('tipoCancelar').value;
+
+        if (!telefono) {
+            alert("Por favor ingresa tu número de WhatsApp registrado para buscar la cita.");
+            return;
+        }
+
+        if (!confirm(`¿Estás seguro de cancelar tu reserva de ${tipo.toUpperCase()} con el número ${telefono}? Recuerda que debe ser con al menos 1 hora de anticipación.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/cancelar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telefono: telefono, tipo: tipo })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "No se pudo procesar la cancelación.");
+            }
+
+            alert(result.mensaje);
             location.reload();
         } catch (err) {
             alert(err.message);
