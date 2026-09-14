@@ -23,9 +23,11 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 # --- ESQUEMAS DE DATOS ---
 
 class ReservaSchema(BaseModel):
+    clase_id: Optional[str] = "1"
     bicicleta: str
     nombre: str
     telefono: str
+    modalidad: Optional[str] = ""
 
 class ReservaPilatesSchema(BaseModel):
     nombre: str
@@ -37,42 +39,56 @@ class ReservaPilatesSchema(BaseModel):
     bebida: Optional[str] = ""
     personaje: Optional[str] = ""
 
+class CancelarSchema(BaseModel):
+    telefono: str
+    tipo: str  # "spinning" o "pilates"
+
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
     return FileResponse(BASE_DIR / "templates" / "index.html")
 
 # --- ENDPOINTS SPINNING ---
 
+@app.get("/api/reservas/{clase_id}")
+async def obtener_reservas_por_clase(clase_id: str):
+    res = supabase.table("reservas_spinning").select("bicicleta").eq("clase_id", clase_id).execute()
+    ocupadas = [int(row["bicicleta"]) for row in res.data if str(row.get("bicicleta")).isdigit()]
+    return {"bicis_ocupadas": ocupadas}
+
 @app.get("/api/reservas")
 async def obtener_reservas(clase_id: Optional[str] = None, fecha: Optional[str] = None):
-    res = supabase.table("reservas_spinning").select("bicicleta").execute()
+    query = supabase.table("reservas_spinning").select("bicicleta")
+    if clase_id:
+        query = query.eq("clase_id", clase_id)
+    res = query.execute()
     ocupadas = [int(row["bicicleta"]) for row in res.data if str(row.get("bicicleta")).isdigit()]
     return {"bicis_ocupadas": ocupadas}
 
 @app.post("/api/reservar")
 async def registrar_reserva(reserva: ReservaSchema):
     bici_id = str(reserva.bicicleta).strip()
+    clase_id = str(reserva.clase_id).strip()
     
-    check = supabase.table("reservas_spinning").select("bicicleta").eq("bicicleta", bici_id).execute()
+    check = supabase.table("reservas_spinning").select("bicicleta").eq("clase_id", clase_id).eq("bicicleta", bici_id).execute()
     if check.data:
-        raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada.")
+        raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada para esta clase.")
     
     supabase.table("reservas_spinning").insert({
+        "clase_id": clase_id,
         "bicicleta": bici_id,
         "nombre": reserva.nombre,
-        "telefono": reserva.telefono
+        "telefono": reserva.telefono,
+        "modalidad": reserva.modalidad
     }).execute()
     
     return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
 
-# --- ENDPOINTS PILATES (ESTÁNDAR) ---
+# --- ENDPOINTS PILATES ---
 
 @app.get("/api/pilates/reservas")
 @app.get("/api/reservas-pilates")
 async def obtener_reservas_pilates(paquete: Optional[str] = None):
-    # Consulta estándar sin importar promociones pasadas
     res = supabase.table("reservas_pilates").select("cama").execute()
-    
     camas = []
     for r in res.data:
         cama_val = r.get("cama")
@@ -94,6 +110,31 @@ async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
     nueva_reserva = reserva.dict()
     supabase.table("reservas_pilates").insert(nueva_reserva).execute()
     return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
+
+# --- ENDPOINT DE CANCELACIÓN POR WHATSAPP ---
+
+@app.post("/api/cancelar")
+async def cancelar_reserva(datos: CancelarSchema):
+    telefono = datos.telefono.strip()
+    tipo = datos.tipo.strip().lower()
+
+    if not telefono:
+        raise HTTPException(status_code=400, detail="Debe ingresar un número de teléfono.")
+
+    if tipo == "spinning":
+        res = supabase.table("reservas_spinning").delete().eq("telefono", telefono).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Spinning con este número de WhatsApp.")
+        return {"status": "ok", "mensaje": "Reserva de Spinning cancelada exitosamente."}
+    
+    elif tipo == "pilates":
+        res = supabase.table("reservas_pilates").delete().eq("telefono", telefono).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Pilates con este número de WhatsApp.")
+        return {"status": "ok", "mensaje": "Reserva de Pilates cancelada exitosamente."}
+    
+    else:
+        raise HTTPException(status_code=400, detail="Tipo de reserva inválido.")
 
 # --- ENDPOINT DE LIMPIEZA MANUAL ---
 
@@ -136,7 +177,7 @@ async def obtener_clases():
         {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Just Ride", "coach": "Coquis"},
         {"id": 12, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Just Ride", "coach": "Mayra"},
         {"id": 13, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Just Ride", "coach": "Coquis"},
-        {"id": 14, "dia": "Viernes", "hora": "07:15 PM", "coach": "TEMATICA"}
+        {"id": 14, "dia": "Viernes", "hora": "07:15 PM", "modalidad": "TEMATICA"}
     ]
 
 if __name__ == "__main__":
