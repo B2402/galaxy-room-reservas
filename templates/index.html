@@ -282,6 +282,26 @@
             </form>
         </div>
 
+        <!-- SECCIÓN RESTAURADA: CANCELAR CITA MEDIANTE WHATSAPP -->
+        <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-8 border border-red-500/30 shadow-2xl">
+            <h2 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span>❌</span> ¿Necesitas Cancelar tu Cita?
+            </h2>
+            <p class="text-[11px] text-slate-300 mb-3">
+                Puedes cancelar tu cita ingresando tu número de WhatsApp registrado (con al menos <strong>1 hora de anticipación</strong>).
+            </p>
+            <div class="space-y-2">
+                <input type="tel" id="telCancelar" placeholder="Teléfono WhatsApp registrado" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-2.5 text-xs focus:outline-none focus:border-red-400 text-white placeholder-slate-400">
+                <select id="tipoCancelar" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-2.5 text-xs focus:outline-none focus:border-red-400 text-white">
+                    <option value="spinning">Spinning Galaxy Room</option>
+                    <option value="pilates">Pilates Studio</option>
+                </select>
+                <button type="button" onclick="cancelarCita()" class="w-full py-2.5 bg-red-600/80 hover:bg-red-500 text-white font-bold rounded-lg text-xs transition-all uppercase tracking-wider shadow-md">
+                    Cancelar Mi Cita
+                </button>
+            </div>
+        </section>
+
     </div>
 
     <!-- BOTÓN RESET PRUEBAS -->
@@ -430,56 +450,50 @@
     async function confirmarReserva() {
         const nombre = document.getElementById('nombre').value.trim();
         const telefono = document.getElementById('telefono').value.trim();
-        const selectClase = document.getElementById('select-clase');
+        const claseId = document.getElementById('select-clase').value;
         const modalidad = document.getElementById('select-modalidad-spinning').value;
-        
+
         if (!nombre || !telefono) {
-            alert("Por favor completa tu nombre y número de teléfono.");
+            alert("Por favor completa tu nombre y número de WhatsApp.");
             return;
         }
-
         if (!biciSeleccionada) {
-            alert("Por favor selecciona tu bicicleta.");
+            alert("Por favor selecciona una bicicleta.");
             return;
         }
 
         try {
-            const res = await fetch('/api/reservar', {
+            const response = await fetch('/api/reservar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    bicicleta: String(biciSeleccionada), // String para ReservaSchema
+                    clase_id: claseId,
+                    bicicleta: String(biciSeleccionada),
                     nombre: nombre,
-                    telefono: telefono
+                    telefono: telefono,
+                    modalidad: modalidad
                 })
             });
 
-            if (!res.ok) {
-                const textError = await res.text();
-                throw new Error(textError || `Error ${res.status} al procesar reserva`);
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "Error al registrar la reserva.");
             }
 
-            const data = await res.json();
+            alert(result.mensaje);
+            
+            const textoWs = encodeURIComponent(`Hola! Acabo de reservar la Bicicleta #${biciSeleccionada} para la clase. Mi nombre es ${nombre}. Adjunto mi comprobante de pago.`);
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
 
-            const mensaje = `Hola! Realicé mi reserva para Spinning Galaxy Room:\n\n` +
-                `👤 *Nombre:* ${nombre}\n` +
-                `📞 *Teléfono:* ${telefono}\n` +
-                `🚲 *Bicicleta:* #${biciSeleccionada}\n` +
-                `*Coach:* ${coachSeleccionado}\n` +
-                `💳 *Modalidad:* ${modalidad}\n\n` +
-                `Adjunto mi comprobante de pago.`;
-
-           let urlWhatsApp = `https://api.whatsapp.com/send?phone=523522083263&text=${encodeURIComponent(mensaje)}`;
-           window.open(urlWhatsApp, '_blank');
-
+            location.reload();
         } catch (err) {
-            alert(`Error al reservar:\n${err.message}`);
+            alert(err.message);
+            cargarBicisDisponibles();
         }
     }
 
     async function confirmarReservaPilates(event) {
         event.preventDefault();
-
         const nombre = document.getElementById('nombrePilates').value.trim();
         const telefono = document.getElementById('telPilates').value.trim();
         const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
@@ -489,7 +503,7 @@
         const personaje = document.getElementById('personaje').value.trim();
 
         try {
-            const res = await fetch('/api/pilates/reservar', {
+            const response = await fetch('/api/pilates/reservar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -497,36 +511,59 @@
                     telefono: telefono,
                     fecha_nacimiento: fechaNacimiento,
                     paquete: paquete,
-                    cama: "", // Coincide exactamente con el schema de ReservaPilatesSchema
                     fruta: fruta,
                     bebida: bebida,
                     personaje: personaje
                 })
             });
 
-            if (!res.ok) {
-                const textError = await res.text();
-                throw new Error(textError || `Error ${res.status} del servidor al reservar Pilates`);
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "Error al registrar la reserva de Pilates.");
             }
 
-            const data = await res.json();
+            alert(result.mensaje);
 
-            const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
-                `👤 *Nombre:* ${nombre}\n` +
-                `📞 *Teléfono:* ${telefono}\n` +
-                `📦 *Paquete:* ${paquete}\n` +
-                (fruta ? `🍎 *Fruta:* ${fruta}\n` : '') +
-                (bebida ? `🥤 *Bebida:* ${bebida}\n` : '') +
-                (personaje ? `⭐ *Temática:* ${personaje}\n` : '') +
-                `\nAdjunto mi comprobante de pago.`;
+            const textoWs = encodeURIComponent(`Hola! Acabo de registrar mi espacio en Pilates Studio. Mi nombre es ${nombre}. Adjunto mi comprobante de pago.`);
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
 
-            const urlWhatsapp = `https://api.whatsapp.com/send?phone=${NUMERO_ADMIN_WHATSAPP}&text=${encodeURIComponent(mensaje)}`;
-            window.location.href = urlWhatsapp;
-
+            location.reload();
         } catch (err) {
-            alert(`Error al reservar Pilates:\n${err.message}`);
+            alert(err.message);
         }
     }
-</script>
+
+    async function cancelarCita() {
+        const telefono = document.getElementById('telCancelar').value.trim();
+        const tipo = document.getElementById('tipoCancelar').value;
+
+        if (!telefono) {
+            alert("Por favor ingresa tu número de WhatsApp registrado para buscar la cita.");
+            return;
+        }
+
+        if (!confirm(`¿Estás seguro de cancelar tu reserva de ${tipo.toUpperCase()} con el número ${telefono}? Recuerda que debe ser con al menos 1 hora de anticipación.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/cancelar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telefono: telefono, tipo: tipo })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "No se pudo procesar la cancelación.");
+            }
+
+            alert(result.mensaje);
+            location.reload();
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+    </script>
 </body>
 </html>
