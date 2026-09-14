@@ -319,7 +319,7 @@
         if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
             document.getElementById('btnResetAdmin').classList.remove('hidden');
         }
-        cargarClases(); // <-- ¡Esta era la línea faltante que cargaba todo al iniciar!
+        cargarClases();
     });
 
     function copiarClabe(clabe) {
@@ -484,7 +484,6 @@
 
             alert(result.mensaje);
             
-            // Mensaje de WhatsApp completo con todos los datos de Spinning
             const textoWs = encodeURIComponent(
                 `*NUEVA RESERVA - SPINNING GALAXY ROOM*\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
@@ -536,7 +535,6 @@
 
             alert(result.mensaje);
 
-            // Mensaje de WhatsApp completo con todos los datos de Pilates
             const textoWs = encodeURIComponent(
                 `*NUEVA RESERVA - PILATES STUDIO*\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
@@ -579,10 +577,10 @@
 
             const result = await response.json();
             if (!response.ok) {
-                throw new Error(result.detail || "No se pudo procesar la cancelación.");
+                throw new Error(result.detail || "Error al cancelar la cita.");
             }
 
-            alert(result.mensaje);
+            alert(result.mensaje || "Cita cancelada exitosamente.");
             location.reload();
         } catch (err) {
             alert(err.message);
