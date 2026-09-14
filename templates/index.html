@@ -581,6 +581,15 @@
             }
 
             alert(result.mensaje || "Cita cancelada exitosamente.");
+
+            const textoWs = encodeURIComponent(
+                `*CANCELACIÓN DE RESERVA*\n\n` +
+                `📱 *Teléfono:* ${telefono}\n` +
+                `🏋️‍♀️ *Experiencia:* ${tipo.toUpperCase()}\n\n` +
+                `Solicito la cancelación de mi cita dentro del tiempo establecido.`
+            );
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
+
             location.reload();
         } catch (err) {
             alert(err.message);
