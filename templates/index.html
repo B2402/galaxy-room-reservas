@@ -230,8 +230,13 @@
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Selecciona tu Paquete u Horario:</label>
                         <select id="paquetePilates" required class="w-full p-3 rounded-lg input-dark text-sm text-white">
-                            <option value="Clase Individual Pilates">💳 Clase Individual Pilates</option>
-                            <option value="Paquete Mensual Pilates">🔥 Paquete Mensual Pilates</option>
+                            <option value="Pilates Reformer Básico ($800 MXN)">🧘‍♀️ Pilates Reformer Básico (2 veces/sem) — $800 MXN</option>
+                            <option value="Pilates Reformer Intermedio ($1,100 MXN)">🧘‍♀️ Pilates Reformer Intermedio (3 veces/sem) — $1,100 MXN</option>
+                            <option value="Pilates Reformer Premium ($1,600 MXN)">⭐ Pilates Reformer Premium (5 veces/sem) — $1,600 MXN</option>
+                            <option value="Pilates Reformer Clase Individual ($120 MXN)">💳 Pilates Reformer Clase Individual — $120 MXN</option>
+                            <option value="Combo Spinning + Pilates (8 clases spinning + 8 pilates - $1,000 MXN)">🔥 Combo Spinning + Pilates (8 esp + 8 pil) — $1,000 MXN</option>
+                            <option value="Combo Spinning + Pilates (16 clases spinning + 8 pilates - $1,200 MXN)">🔥 Combo Spinning + Pilates (16 esp + 8 pil) — $1,200 MXN</option>
+                            <option value="Combo Spinning + Pilates (20 clases spinning + 8 pilates - $1,300 MXN)">🔥 Combo Spinning + Pilates (20 esp + 8 pil) — $1,300 MXN</option>
                             <option value="Paquete Personalizado / Consulta">⭐ Paquete Personalizado</option>
                         </select>
                     </div>
@@ -387,14 +392,34 @@
                     <td class="py-2 px-1 text-right font-bold">$120 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">8 x semana</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Reformer Básico</td>
+                    <td class="py-2 px-1">2 x semana</td>
                     <td class="py-2 px-1 text-right font-bold">$800 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Reformer Intermedio</td>
                     <td class="py-2 px-1">3 x semana</td>
-                    <td class="py-2 px-1 text-right font-bold">$1100 MXN</td>
+                    <td class="py-2 px-1 text-right font-bold">$1,100 MXN</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Reformer Premium</td>
+                    <td class="py-2 px-1">5 x semana</td>
+                    <td class="py-2 px-1 text-right font-bold">$1,600 MXN</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-1 font-semibold text-pink-300">Combo (8 esp + 8 pil)</td>
+                    <td class="py-2 px-1">Mensual</td>
+                    <td class="py-2 px-1 text-right font-bold">$1,000 MXN</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-1 font-semibold text-pink-300">Combo (16 esp + 8 pil)</td>
+                    <td class="py-2 px-1">Mensual</td>
+                    <td class="py-2 px-1 text-right font-bold">$1,200 MXN</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-1 font-semibold text-pink-300">Combo (20 esp + 8 pil)</td>
+                    <td class="py-2 px-1">Mensual</td>
+                    <td class="py-2 px-1 text-right font-bold">$1,300 MXN</td>
                 </tr>
             `;
         }
@@ -548,23 +573,29 @@
         const nombre = document.getElementById('nombrePilates').value.trim();
         const telefono = document.getElementById('telPilates').value.trim();
         const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
-        const paquete = document.getElementById('paquetePilates').value;
+        const paqueteSelect = document.getElementById('paquetePilates');
+        const paquete = paqueteSelect.value;
         const fruta = document.getElementById('fruta').value.trim() || "No especificada";
         const bebida = document.getElementById('bebida').value.trim() || "No especificada";
         const personaje = document.getElementById('personaje').value.trim() || "No especificado";
 
+        if (!nombre || !telefono || !fechaNacimiento || !paquete) {
+            alert("Por favor completa todos los campos obligatorios.");
+            return;
+        }
+
         try {
-            const response = await fetch('/api/pilates/reservar', {
+            const response = await fetch('/api/reservar-pilates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    nombre: nombre,
-                    telefono: telefono,
+                    nombre,
+                    telefono,
                     fecha_nacimiento: fechaNacimiento,
-                    paquete: paquete,
-                    fruta: fruta,
-                    bebida: bebida,
-                    personaje: personaje
+                    paquete,
+                    fruta,
+                    bebida,
+                    personaje
                 })
             });
 
@@ -573,25 +604,26 @@
                 throw new Error(result.detail || "Error al registrar la reserva de Pilates.");
             }
 
-            alert(result.mensaje);
+            alert(result.mensaje || "¡Reserva de Pilates registrada con éxito!");
 
             const textoWs = encodeURIComponent(
                 `*NUEVA RESERVA - PILATES STUDIO*\n\n` +
                 `👤 *Nombre:* ${nombre}\n` +
                 `📱 *Teléfono:* ${telefono}\n` +
                 `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}\n` +
-                `📦 *Paquete:* ${paquete}\n` +
-                `🍎 *Fruta Preferida:* ${fruta}\n` +
-                `🥤 *Bebida Hidratante:* ${bebida}\n` +
-                `⭐ *Personaje/Temática:* ${personaje}\n\n` +
-                `*Estoy consciente de que cuento con hasta una hora de anticipación previa a mi cita para realizar cualquier cancelación en caso de requerirlo; de lo contrario, la sesión se me cobrará de todas formas.*\n\n` +
+                `📦 *Paquete / Horario:* ${paquete}\n\n` +
+                `✨ *Personalización de Sesión:*\n` +
+                `🍎 *Fruta:* ${fruta}\n` +
+                `🥤 *Bebida:* ${bebida}\n` +
+                `🎨 *Personaje/Temática:* ${personaje}\n\n` +
+                `*Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita en caso de requerirlo, y de no ser asi se me cobrara de todas formas*\n\n` +
                 `Adjunto mi comprobante de pago.`
             );
             window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
 
             location.reload();
         } catch (err) {
-            alert(err.message);
+            alert(err.message || "Ocurrió un error al procesar la reserva.");
         }
     }
 
@@ -604,23 +636,19 @@
             return;
         }
 
-        if (!confirm("¿Estás seguro de que deseas solicitar la cancelación de tu cita?")) {
-            return;
-        }
-
         try {
             const response = await fetch('/api/cancelar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telefono: telefono, tipo: tipo })
+                body: JSON.stringify({ telefono, tipo })
             });
 
             const result = await response.json();
             if (!response.ok) {
-                throw new Error(result.detail || "Error al cancelar la cita.");
+                throw new Error(result.detail || "No se encontró una reserva activa con este número.");
             }
 
-            alert(result.mensaje);
+            alert(result.mensaje || "Cita cancelada exitosamente.");
             location.reload();
         } catch (err) {
             alert(err.message);
