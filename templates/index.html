@@ -143,10 +143,14 @@
             <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
                 <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">2. Selecciona tu Clase y Modalidad</h2>
                 <div class="space-y-3">
+                    <!-- HORARIOS, COACHES Y TEMÁTICAS RESTAURADOS -->
                     <select id="select-clase" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
-                        <option value="Clase Matutina (Lun-Mie 7:00 AM)">🌅 Clase Matutina (Lun-Mié 7:00 AM)</option>
-                        <option value="Clase Vespertina (Lun-Mie 7:00 PM)">🌙 Clase Vespertina (Lun-Mié 7:00 PM)</option>
-                        <option value="Clase Especial Fin de Semana">⭐ Clase Especial Fin de Semana</option>
+                        <option value="06:00 AM - Coach Mayra (Rumba & Cardio)">🌅 06:00 AM — Coach Mayra (Rumba & Cardio)</option>
+                        <option value="07:00 AM - Coach Mayra (Energía Matutina)">🌅 07:00 AM — Coach Mayra (Energía Matutina)</option>
+                        <option value="08:00 AM - Coach Paola (Resistencia Total)">☀️ 08:00 AM — Coach Paola (Resistencia Total)</option>
+                        <option value="05:30 PM - Coach Carlos (Reto Velocidad)">🌆 05:30 PM — Coach Carlos (Reto Velocidad)</option>
+                        <option value="06:30 PM - Coach Mayra (Quema Grasa Nocturna)">🌙 06:30 PM — Coach Mayra (Quema Grasa Nocturna)</option>
+                        <option value="07:30 PM - Coach Paola (Clase Temática / DJ Set)">🌙 07:30 PM — Coach Paola (Clase Temática / DJ Set)</option>
                     </select>
 
                     <div>
@@ -470,7 +474,7 @@
         document.getElementById('biciSeleccionadaTexto').innerText = `Bici #${numero}`;
     }
 
-    // FUNCIÓN CORREGIDA PARA SPINNING (ENVÍA A WHATSAPP DIRECTAMENTE)
+    // FUNCIÓN PARA SPINNING (ENVÍA A WHATSAPP DIRECTAMENTE)
     function confirmarReserva() {
         const nombre = document.getElementById('nombre').value.trim();
         const telefono = document.getElementById('telefono').value.trim();
@@ -486,11 +490,10 @@
             return;
         }
 
-        // Construir mensaje estructurado para WhatsApp
         const mensaje = `Hola! Quiero confirmar mi reserva en Spinning Galaxy Room 🚴‍♂️✨\n\n` +
             `*Nombre:* ${nombre}\n` +
             `*Teléfono:* ${telefono}\n` +
-            `*Clase:* ${clase}\n` +
+            `*Clase / Horario:* ${clase}\n` +
             `*Bicicleta:* #${biciSeleccionada}\n` +
             `*Modalidad:* ${modalidad}\n\n` +
             `Adjunto mi comprobante de pago. Quedo a la espera de mi confirmación. ¡Gracias!`;
@@ -547,4 +550,3 @@
     </script>
 </body>
 </html>
-          
