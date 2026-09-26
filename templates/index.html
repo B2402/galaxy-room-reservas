@@ -570,21 +570,16 @@
             return;
         }
 
-            `**NUEVA RESERVA - PILATES STUDIO*
-              // Construir mensaje estructurado para WhatsApp
+        // Construir mensaje estructurado para WhatsApp
         const mensaje = `Hola! Quiero confirmar mi reserva en Pilates Studio 🧘‍♀️✨\n\n` +
-            
-            👤 *Nombre:* ${nombre}\n` +
-            📱*Teléfono:* ${telefono}\n` +
-            🎂*Fecha de nacimiento:* ${fechaNacimiento}\n` +
-            📦 *Paquete:* ${paquete}\n\n` +
-             *Personalización de Sesión:*\n` +
-            🍎 *Fruta Preferida:* ${fruta}\n` +
-            🥤*Bebida:* ${bebida}\n` +
-            ⭐*Temática/Personaje:* ${personaje}\n\n` +
-
-`Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita en caso de requerirlo, y de no ser asi se me cobrara de todas formas`;
-            
+            `*Nombre:* ${nombre}\n` +
+            `*Teléfono:* ${telefono}\n` +
+            `*Fecha de nacimiento:* ${fechaNacimiento}\n` +
+            `*Paquete:* ${paquete}\n\n` +
+            `*Personalización de Sesión:*\n` +
+            `- Fruta: ${fruta}\n` +
+            `- Bebida: ${bebida}\n` +
+            `- Temática/Personaje: ${personaje}\n\n` +
             `Adjunto mi comprobante de pago. Quedo a la espera de mi confirmación. ¡Gracias!`;
 
         const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
