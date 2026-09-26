@@ -572,14 +572,14 @@
 
         // Construir mensaje estructurado para WhatsApp
         const mensaje = `Hola! Quiero confirmar mi reserva en Pilates Studio 🧘‍♀️✨\n\n` +
-            `*Nombre:* ${nombre}\n` +
-            `*Teléfono:* ${telefono}\n` +
-            `*Fecha de nacimiento:* ${fechaNacimiento}\n` +
-            `*Paquete:* ${paquete}\n\n` +
+            `👤*Nombre:* ${nombre}\n` +
+            `📱*Teléfono:* ${telefono}\n` +
+            `🎂*Fecha de nacimiento:* ${fechaNacimiento}\n` +
+            `📦*Paquete:* ${paquete}\n\n` +
             `*Personalización de Sesión:*\n` +
-            `- Fruta: ${fruta}\n` +
-            `- Bebida: ${bebida}\n` +
-            `- Temática/Personaje: ${personaje}\n\n` +
+            `-🍎* Fruta:* ${fruta}\n` +
+            `-🥤*Bebida:* ${bebida}\n` +
+            `-⭐*Temática/Personaje:* ${personaje}\n\n` +
             `Adjunto mi comprobante de pago. Quedo a la espera de mi confirmación. ¡Gracias!`;
 
         const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
