@@ -517,7 +517,6 @@
         const telefono = document.getElementById('telefono').value.trim();
         const claseSelect = document.getElementById('select-clase');
         const claseId = claseSelect.value;
-        const textoClaseSeleccionada = claseSelect.options[claseSelect.selectedIndex].text;
         const modalidad = document.getElementById('select-modalidad-spinning').value;
 
         if (!nombre || !telefono) {
@@ -552,6 +551,53 @@
             console.error("Error al enviar reserva:", err);
             alert("Error de conexión con el servidor.");
         }
+    }
+
+    // NUEVA FUNCIÓN CORREGIDA PARA PILATES QUE ENVÍA A WHATSAPP
+    function confirmarReservaPilates(event) {
+        event.preventDefault(); // Evita que la página se recargue o regrese a spinning
+
+        const nombre = document.getElementById('nombrePilates').value.trim();
+        const telefono = document.getElementById('telPilates').value.trim();
+        const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
+        const paquete = document.getElementById('paquetePilates').value;
+        const fruta = document.getElementById('fruta').value.trim() || "No especificada";
+        const bebida = document.getElementById('bebida').value.trim() || "No especificada";
+        const personaje = document.getElementById('personaje').value.trim() || "No especificado";
+
+        if (!nombre || !telefono || !fechaNacimiento || !paquete) {
+            alert("Por favor completa los campos obligatorios.");
+            return;
+        }
+
+        // Construir mensaje estructurado para WhatsApp
+        const mensaje = `Hola! Quiero confirmar mi reserva en Pilates Studio 🧘‍♀️✨\n\n` +
+            `*Nombre:* ${nombre}\n` +
+            `*Teléfono:* ${telefono}\n` +
+            `*Fecha de nacimiento:* ${fechaNacimiento}\n` +
+            `*Paquete:* ${paquete}\n\n` +
+            `*Personalización de Sesión:*\n` +
+            `- Fruta: ${fruta}\n` +
+            `- Bebida: ${bebida}\n` +
+            `- Temática/Personaje: ${personaje}\n\n` +
+            `Adjunto mi comprobante de pago. Quedo a la espera de mi confirmación. ¡Gracias!`;
+
+        const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+        window.open(urlWhatsApp, '_blank');
+    }
+
+    function cancelarCita() {
+        const telefono = document.getElementById('telCancelar').value.trim();
+        const tipo = document.getElementById('tipoCancelar').value;
+
+        if (!telefono) {
+            alert("Por favor ingresa tu número de WhatsApp registrado.");
+            return;
+        }
+
+        const mensaje = `Hola, necesito cancelar mi cita registrada con el número ${telefono} para la sección de *${tipo.toUpperCase()}*.`;
+        const urlWhatsApp = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+        window.open(urlWhatsApp, '_blank');
     }
     </script>
 </body>
