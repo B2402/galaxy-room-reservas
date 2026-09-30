@@ -87,7 +87,7 @@ async def registrar_reserva(reserva: ReservaSchema):
             "modalidad": reserva.modalidad
         }).execute()
         
-        return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente (Por favor, Recuerda enviar tu mensaje de whatsApp con la información de tu reserva que se genera automaticamente en el sistema y tu comprobante de pago juntos.)}"
+        return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente (Por favor, Recuerda enviar tu mensaje de whatsApp con la información de tu reserva que se genera automaticamente en el sistema y tu comprobante de pago juntos).}"
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
@@ -100,7 +100,7 @@ async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
     try:
         nueva_reserva = reserva.dict()
         supabase.table("reservas_pilates").insert(nueva_reserva).execute()
-        return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente (por favor, Recuerda envíar tu mensaje de whatsApp con la información de tu reserva que se genera automaticamente en el sistema y tu comprobante de pago juntos.)}"
+        return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente (por favor, Recuerda envíar tu mensaje de whatsApp con la información de tu reserva que se genera automaticamente en el sistema y tu comprobante de pago juntos).}"
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
