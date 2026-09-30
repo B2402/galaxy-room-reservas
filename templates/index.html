@@ -644,13 +644,16 @@
 
             const result = await response.json();
             if (!response.ok) {
-                throw new Error(result.detail || "Error al cancelar la cita.");
+              alert("Cita cancelada correctamente.");
+                const mensajeWa = encodeURIComponent(`Hola, soy el usuario con WhatsApp ${telefono}. He solicitado la cancelación de mi cita de ${tipo}.`);
+                window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWa}`, '_blank');
+                location.reload();
+            } else {
+                alert("Error: " + (data.error || "No se pudo encontrar la cita con ese número"));
             }
-
-            alert(result.mensaje);
-            location.reload();
         } catch (err) {
-            alert(err.message);
+            console.error("Error al cancelar:", err);
+            alert("Error de conexión al servidor.");
         }
     }
     </script>
