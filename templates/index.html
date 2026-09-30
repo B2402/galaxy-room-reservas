@@ -395,44 +395,41 @@
 
             tituloTabla.className = "text-xs font-bold text-purple-400 uppercase tracking-wider mb-3";
             cuerpoTabla.innerHTML = `
-            
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1"> Pilates Reformer Básico Clases de pilates 2 x semana</td>
+                    <td class="py-2 px-1">Pilates Reformer Básico (2 x semana)</td>
                     <td class="py-2 px-1 text-right font-bold">$800 MXN</td>
                 </tr>
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1"> Pilates Reformer Internmedio 3 x semana</td>
+                    <td class="py-2 px-1">Pilates Reformer Intermedio (3 x semana)</td>
                     <td class="py-2 px-1 text-right font-bold">$1100 MXN</td>
                 </tr>
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Pilates Reformer Premium ( Clases de pilates 5 x semana)</td>
+                    <td class="py-2 px-1">Pilates Reformer Premium (5 x semana)</td>
                     <td class="py-2 px-1 text-right font-bold">$1600 MXN</td>
                 </tr> 
-                    <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Pilates Reformer Clase Individual</td>
+                <tr>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Clase Individual</td>
                     <td class="py-2 px-1">1 Sesión</td>
                     <td class="py-2 px-1 text-right font-bold">$120 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (20 clases de Spinning + 8 de pilates Performer)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
+                    <td class="py-2 px-1">Spinning + Pilates (20 + 8 clases)</td>
                     <td class="py-2 px-1 text-right font-bold">$1300 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (16 clases de Spinning + 8 de pilates Performer)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
+                    <td class="py-2 px-1">Spinning + Pilates (16 + 8 clases)</td>
                     <td class="py-2 px-1 text-right font-bold">$1200 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (8 clases de Spinning + 8 de pilates Performer)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
+                    <td class="py-2 px-1">Spinning + Pilates (8 + 8 clases)</td>
                     <td class="py-2 px-1 text-right font-bold">$1000 MXN</td>
-                </tr> 
-                
-               
+                </tr>
             `;
         }
     }
@@ -555,8 +552,17 @@
             });
             const data = await response.json();
             if (response.ok) {
-                alert("¡Reserva guardada con éxito!");
-                location.reload();
+                // Generar mensaje para enviar por WhatsApp al administrador
+                const mensaje = `Hola, quiero confirmar mi reserva en Spinning Galaxy Room:%0A` +
+                                `👤 *Nombre:* ${nombre}%0A` +
+                                `📱 *Teléfono:* ${telefono}%0A` +
+                                `📅 *Clase:* ${textoClaseSeleccionada}%0A` +
+                                `🚲 *Bicicleta:* #${biciSeleccionada}%0A` +
+                                `💳 *Modalidad:* ${modalidad}%0A%0A` +
+                                `Adjunto mi comprobante de pago. ¡Gracias!`;
+
+                alert("¡Reserva guardada con éxito! Te redirigiremos a WhatsApp para enviar tu comprobante.");
+                window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensaje}`;
             } else {
                 alert("Error: " + (data.error || "No se pudo completar la reserva"));
             }
@@ -564,6 +570,43 @@
             console.error(err);
             alert("Error de conexión al reservar.");
         }
+    }
+
+    async function confirmarReservaPilates(event) {
+        event.preventDefault();
+        const nombre = document.getElementById('nombrePilates').value.trim();
+        const telefono = document.getElementById('telPilates').value.trim();
+        const fechaNac = document.getElementById('fechaNacimientoPilates').value;
+        const paquete = document.getElementById('paquetePilates').value;
+        const fruta = document.getElementById('fruta').value.trim() || 'N/A';
+        const bebida = document.getElementById('bebida').value.trim() || 'N/A';
+        const personaje = document.getElementById('personaje').value.trim() || 'N/A';
+
+        const mensaje = `Hola, quiero reservar en Pilates Studio:%0A` +
+                        `👤 *Nombre:* ${nombre}%0A` +
+                        `📱 *Teléfono:* ${telefono}%0A` +
+                        `🎂 *Nacimiento:* ${fechaNac}%0A` +
+                        `📦 *Paquete:* ${paquete}%0A` +
+                        `🍎 *Fruta:* ${fruta}%0A` +
+                        `🥤 *Bebida:* ${bebida}%0A` +
+                        `⭐ *Temática/Personaje:* ${personaje}%0A%0A` +
+                        `Adjunto mi comprobante de pago.`;
+
+        alert("¡Datos listos! Te redirigiremos a WhatsApp para completar tu registro de Pilates.");
+        window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensaje}`;
+    }
+
+    async function cancelarCita() {
+        const telefono = document.getElementById('telCancelar').value.trim();
+        const tipo = document.getElementById('tipoCancelar').value;
+
+        if (!telefono) {
+            alert("Por favor ingresa tu número de WhatsApp registrado.");
+            return;
+        }
+
+        const mensaje = `Hola, necesito cancelar mi cita registrada con el número: ${telefono} (${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}).`;
+        window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
     }
     </script>
 </body>
