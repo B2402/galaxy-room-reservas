@@ -624,49 +624,198 @@
         }
     }
 
-    async function confirmarReservaPilates(event) {
-        event.preventDefault();
-        const nombre = document.getElementById('nombrePilates').value.trim();
-        const telefono = document.getElementById('telPilates').value.trim();
-        const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
-        const paquete = document.getElementById('paquetePilates').value;
-        const fruta = document.getElementById('fruta').value.trim() || "No especificada";
-        const bebida = document.getElementById('bebida').value.trim() || "No especificada";
-        const personaje = document.getElementById('personaje').value.trim() || "No especificado";
+    function alCambiarOpcionPilates() {
 
-        try {
-            const response = await fetch('/api/pilates/reservar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombre: nombre,
-                    telefono: telefono,
-                    fecha_nacimiento: fechaNacimiento,
-                    paquete: paquete,
-                    fruta: fruta,
-                    bebida: bebida,
-                    personaje: personaje
-                })
-            });
+renderizarCamasPilates();
 
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.detail || "Error al registrar la reserva de Pilates.");
-            }
+}
 
-            alert(result.mensaje);
 
-            const textoWs = encodeURIComponent(
-                `*NUEVA RESERVA - PILATES STUDIO*\n\n` +
-                `👤 *Nombre:* ${nombre}\n` +
-                `📱 *Teléfono:* ${telefono}\n` +
-                `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}\n` +
-                `📦 *Paquete:* ${paquete}\n` +
-                `🍎 *Fruta Preferida:* ${fruta}\n` +
-                `🥤 *Bebida Hidratante:* ${bebida}\n` +
-                `⭐ *Personaje/Temática:* ${personaje}\n\n` +
-                `*Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita en caso de requerirlo, y de no ser asi se me cobrara de todas formas*\n\n` +
-                `Adjunto mi comprobante de pago.`
+
+async function renderizarCamasPilates() {
+
+const paquete = document.getElementById('paquetePilates').value;
+
+
+let ocupadas = [];
+
+try {
+
+const resApi = await fetch(`/api/pilates/reservas?paquete=${encodeURIComponent(paquete)}`);
+
+if (resApi.ok) {
+
+const dataApi = await resApi.json();
+
+ocupadas = dataApi.camas_ocupadas || dataApi.ocupadas || [];
+
+}
+
+} catch (e) {
+
+console.error("Error al consultar camas ocupadas:", e);
+
+}
+
+
+
+camaSeleccionada = null;
+
+document.getElementById('labelCamaSeleccionada').innerText = "Ninguna seleccionada";
+
+document.getElementById('labelCamaSeleccionada').className = "text-xs font-bold text-purple-300";
+
+
+
+for (let i = 1; i <= 5; i++) {
+
+const cont = document.getElementById(`cama-${i}-container`);
+
+if (!cont) continue;
+
+
+
+const estaOcupada = ocupadas.includes(i) || ocupadas.includes(String(i));
+
+if (estaOcupada) {
+
+cont.innerHTML = `
+
+<button type="button" disabled class="cama-card ocupada w-full py-2.5 rounded-lg flex items-center justify-between px-3">
+
+<span class="text-xs font-bold text-red-200">🧘‍♀️ Cama #${i}</span>
+
+<span class="text-[10px] uppercase font-bold text-red-300 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/40">Ocupada</span>
+
+</button>`;
+
+} else {
+
+cont.innerHTML = `
+
+<button type="button" onclick="seleccionarCama(${i})" id="cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3">
+
+<span class="text-xs font-bold text-slate-200">🧘‍♀️ Cama #${i}</span>
+
+<span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">Disponible</span>
+
+</button>`;
+
+}
+
+}
+
+}
+
+
+
+function seleccionarCama(numCama) {
+
+document.querySelectorAll('.cama-card:not(.ocupada)').forEach(el => el.classList.remove('seleccionada'));
+
+const btn = document.getElementById(`cama-${numCama}`);
+
+if (btn) {
+
+btn.classList.add('seleccionada');
+
+camaSeleccionada = String(numCama);
+
+const label = document.getElementById('labelCamaSeleccionada');
+
+label.innerText = `Cama #${numCama} elegida`;
+
+label.className = "text-xs font-extrabold text-purple-300";
+
+}
+
+}
+
+
+
+async function confirmarReservaPilates(e) {
+
+e.preventDefault();
+
+
+
+if (!camaSeleccionada) {
+
+alert("Por favor selecciona una cama disponible.");
+
+return;
+
+}
+
+
+
+const payload = {
+
+nombre: document.getElementById('nombrePilates').value.trim(),
+
+telefono: document.getElementById('telPilates').value.trim(),
+
+fecha_nacimiento: document.getElementById('fechaNacimientoPilates').value,
+
+paquete: document.getElementById('paquetePilates').value,
+
+cama: String(camaSeleccionada),
+
+fruta: document.getElementById('fruta').value.trim(),
+
+bebida: document.getElementById('bebida').value.trim(),
+
+personaje: document.getElementById('personaje').value.trim()
+
+};
+
+
+
+try {
+
+const res = await fetch('/api/pilates/reservar', {
+
+method: 'POST',
+
+headers: { 'Content-Type': 'application/json' },
+
+body: JSON.stringify(payload)
+
+});
+
+
+
+const data = await res.json();
+
+if (!res.ok) {
+
+throw new Error(data.detail || "Error al procesar la reserva");
+
+}
+
+
+
+alert("¡Reserva de Pilates registrada exitosamente!");
+
+
+
+const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
+
+`👤 *Nombre:* ${payload.nombre}\n` +
+
+`📞 *Teléfono:* ${payload.telefono}\n` +
+
+`📦 *Paquete/Horario:* ${payload.paquete}\n` +
+
+`🧘‍♀️ *Cama:* #${payload.cama}\n` +
+
+`🍎 *Fruta:* ${payload.fruta || 'N/A'}\n` +
+
+`🥤 *Bebida:* ${payload.bebida || 'N/A'}\n` +
+
+`🎭 *Temática:* ${payload.personaje || 'N/A'}\n\n` +
+
+`Adjunto mi comprobante de pago.`;
             );
             window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
 
