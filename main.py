@@ -6,41 +6,38 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
-from supabase import create_client, Client
 
 BASE_DIR = Path(__file__).resolve().parent
 
-# --- CONFIGURACIÓN DE SUPABASE ---
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pjatimqcgmnsnkmjspqi.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_KqE4UPVn2JYKnAudq6RV2w_GwhJj_vu")
+app = FastAPI(
+    title="Spinning & Pilates Galaxy Room",
+    description="Sistema de reservas para Spinning y Pilates"
+)
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-app = FastAPI(title="Spinning & Pilates Galaxy Room")
-
+# Servir archivos estáticos
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-# --- ESQUEMAS DE DATOS ---
+# Estructura de datos temporal en memoria
+reservas_db: Dict[str, Dict[str, str]] = {}
+reservas_pilates_db: List[Dict[str, Any]] = []
 
 class ReservaSchema(BaseModel):
-    clase_id: Optional[str] = "1"
     bicicleta: str
     nombre: str
     telefono: str
-    modalidad: Optional[str] = ""
+
+class CancelarReservaSchema(BaseModel):
+    bicicleta: str
 
 class ReservaPilatesSchema(BaseModel):
     nombre: str
     telefono: str
     fecha_nacimiento: str
     paquete: Optional[str] = ""
+    cama: Optional[str] = ""
     fruta: Optional[str] = ""
     bebida: Optional[str] = ""
     personaje: Optional[str] = ""
-
-class CancelarSchema(BaseModel):
-    telefono: str
-    tipo: str  # "spinning" o "pilates"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
@@ -48,93 +45,69 @@ async def read_index():
 
 # --- ENDPOINTS SPINNING ---
 
-@app.get("/api/reservas/{clase_id}")
-async def obtener_reservas_por_clase(clase_id: str):
-    try:
-        res = supabase.table("reservas_spinning").select("bicicleta").eq("clase_id", clase_id).execute()
-        ocupadas = [int(row["bicicleta"]) for row in res.data if str(row.get("bicicleta")).isdigit()]
-        return {"bicis_ocupadas": ocupadas}
-    except Exception as e:
-        return {"bicis_ocupadas": []}
-
 @app.get("/api/reservas")
 async def obtener_reservas(clase_id: Optional[str] = None, fecha: Optional[str] = None):
-    try:
-        query = supabase.table("reservas_spinning").select("bicicleta")
-        if clase_id:
-            query = query.eq("clase_id", clase_id)
-        res = query.execute()
-        ocupadas = [int(row["bicicleta"]) for row in res.data if str(row.get("bicicleta")).isdigit()]
-        return {"bicis_ocupadas": ocupadas}
-    except Exception as e:
-        return {"bicis_ocupadas": []}
+    """Devuelve la lista de bicicletas reservadas."""
+    return {"bicis_ocupadas": [int(k) for k in reservas_db.keys() if k.isdigit()]}
 
 @app.post("/api/reservar")
 async def registrar_reserva(reserva: ReservaSchema):
-    try:
-        bici_id = str(reserva.bicicleta).strip()
-        clase_id = str(reserva.clase_id).strip()
-        
-        check = supabase.table("reservas_spinning").select("bicicleta").eq("clase_id", clase_id).eq("bicicleta", bici_id).execute()
-        if check.data:
-            raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada para esta clase.")
-        
-        supabase.table("reservas_spinning").insert({
-            "clase_id": clase_id,
-            "bicicleta": bici_id,
-            "nombre": reserva.nombre,
-            "telefono": reserva.telefono,
-            "modalidad": reserva.modalidad
-        }).execute()
-        
-        return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente, Por favor recuerda enviar tu mensaje de whatsApp con la información de tu reserva que se genera automaticamente en el sistema, y tu comprobante de pago juntos."}
-    except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=500, detail=f"Error en servidor al guardar: {str(e)}")
-        
-   # --- ENDPOINTS PILATES ---
+    """Registra una nueva reserva de bicicleta."""
+    bici_id = str(reserva.bicicleta).strip()
+    if bici_id in reservas_db:
+        raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada.")
+    
+    reservas_db[bici_id] = {
+        "nombre": reserva.nombre,
+        "telefono": reserva.telefono
+    }
+    return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
+
+@app.post("/api/cancelar")
+async def cancelar_reserva(data: CancelarReservaSchema):
+    """Cancela una reserva de bicicleta."""
+    bici_id = str(data.bicicleta).strip()
+    if bici_id in reservas_db:
+        del reservas_db[bici_id]
+        return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} liberada exitosamente."}
+    return {"status": "ok", "mensaje": "La bicicleta no estaba registrada en el servidor."}
+
+# --- ENDPOINTS PILATES ---
+
+@app.get("/api/pilates/reservas")
+@app.get("/api/reservas-pilates")
+async def obtener_reservas_pilates(paquete: Optional[str] = None):
+    """Devuelve las camas ocupadas para Pilates."""
+    if paquete:
+        camas = [
+            int(r.get("cama")) for r in reservas_pilates_db 
+            if str(r.get("paquete")) == str(paquete) and str(r.get("cama")).isdigit()
+        ]
+        return {"camas_ocupadas": camas, "ocupadas": camas}
+    
+    camas = [int(r.get("cama")) for r in reservas_pilates_db if str(r.get("cama")).isdigit()]
+    return {"camas_ocupadas": camas, "ocupadas": camas}
+
 @app.post("/api/pilates/reservar")
 @app.post("/api/reservas-pilates")
 async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
-    try:
-        nueva_reserva = reserva.dict()
-        supabase.table("reservas_pilates").insert(nueva_reserva).execute()
-        return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente, por favor recuerda envíar tu mensaje de whatsApp con la información de tu reserva que se genera automaticamente en el sistema, y tu comprobante de pago juntos."}
-    except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=500, detail=f"Error en servidor al guardar pilates: {str(e)}")
+    """Registra la reserva de Pilates validando disponibilidad."""
+    cama_id = str(reserva.cama).strip() if reserva.cama else ""
+    paquete_id = str(reserva.paquete).strip() if reserva.paquete else ""
 
-# --- ENDPOINT DE CANCELACIÓN POR WHATSAPP ---
+    if cama_id and paquete_id:
+        cama_ocupada = any(
+            str(r.get("cama")) == cama_id and str(r.get("paquete")) == paquete_id 
+            for r in reservas_pilates_db
+        )
+        if cama_ocupada:
+            raise HTTPException(status_code=400, detail=f"La cama #{cama_id} ya se encuentra reservada para este paquete/horario.")
 
-@app.post("/api/cancelar")
-async def cancelar_reserva(datos: CancelarSchema):
-    try:
-        telefono = datos.telefono.strip()
-        tipo = datos.tipo.strip().lower()
+    nueva_reserva = reserva.dict()
+    reservas_pilates_db.append(nueva_reserva)
+    return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
 
-        if not telefono:
-            raise HTTPException(status_code=400, detail="Debe ingresar un número de teléfono.")
-
-        if tipo == "spinning":
-            res = supabase.table("reservas_spinning").delete().eq("telefono", telefono).execute()
-            if not res.data:
-                raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Spinning con este número de WhatsApp.")
-            return {"status": "ok", "mensaje": "Reserva de Spinning cancelada exitosamente."}
-        
-        elif tipo == "pilates":
-            res = supabase.table("reservas_pilates").delete().eq("telefono", telefono).execute()
-            if not res.data:
-                raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Pilates con este número de WhatsApp.")
-            return {"status": "ok", "mensaje": "Reserva de Pilates cancelada exitosamente."}
-        
-        else:
-            raise HTTPException(status_code=400, detail="Tipo de reserva inválido.")
-    except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=500, detail=f"Error al cancelar: {str(e)}")
+# --- ENDPOINTS AUXILIARES ---
 
 @app.get("/bicicletas")
 async def obtener_bicicletas():
@@ -154,21 +127,20 @@ async def obtener_bicicletas():
 @app.get("/clases")
 async def obtener_clases():
     return [
-        {"id": 1, "dia": "Lunes", "hora": "07:00 AM", "modalidad": "Flow", "coach": "Coquis"},
-        {"id": 2, "dia": "Lunes", "hora": "05:15 PM", "modalidad": "Principiantes"},
-        {"id": 3, "dia": "Lunes", "hora": "06:15 PM", "modalidad": "Flow", "coach": "Mayra"},
-        {"id": 4, "dia": "Lunes", "hora": "07:15 PM", "modalidad": "Flow", "coach": "Tere Vega"},
-        {"id": 5, "dia": "Martes", "hora": "07:00 AM", "modalidad": "Power", "coach": "Coquis"},
-        {"id": 6, "dia": "Martes", "hora": "05:15 PM", "modalidad": "Principiantes"},
-        {"id": 7, "dia": "Martes", "hora": "06:15 PM", "modalidad": "Power", "coach": "Coquis"},
-        {"id": 8, "dia": "Martes", "hora": "07:15 PM", "modalidad": "Power", "coach": "Mayra"},
-        {"id": 9, "dia": "Miércoles", "hora": "06:15 PM", "modalidad": "Dark Room", "coach": "Mayra"},
-        {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "Dark Room", "coach": "Mario"},
-        {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Montaña", "coach": "Coquis"},
-        {"id": 12, "dia": "Jueves", "hora": "05:15 PM", "modalidad": "Principiantes"},
-        {"id": 13, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Montaña", "coach": "Mich"},
-        {"id": 14, "dia": "Viernes", "hora": "06:15 PM", "modalidad": "Speed", "coach": "Mayra"},
-        {"id": 15, "dia": "Viernes", "hora": "07:15 PM", "modalidad": "Tematica", "coach": "Mayra"}
+        {"id": 1, "dia": "Lunes", "hora": "07:00 AM", "modalidad": "Just Ride", "coach": "Coquis"},
+        {"id": 2, "dia": "Lunes", "hora": "05:15 PM", "modalidad": "Just Ride", "coach": "Principiantes"},
+        {"id": 3, "dia": "Lunes", "hora": "06:15 PM", "modalidad": "Just Ride", "coach": "Omar"},
+        {"id": 4, "dia": "Lunes", "hora": "07:15 PM", "modalidad": "Montaña", "coach": "Mayra"},
+        {"id": 5, "dia": "Martes", "hora": "07:00 AM", "modalidad": "Montaña", "coach": "Coquis"},
+        {"id": 6, "dia": "Martes", "hora": "06:15 PM", "modalidad": "Montaña", "coach": "Mario"},
+        {"id": 7, "dia": "Martes", "hora": "07:15 PM", "modalidad": "Flow", "coach": "Mayra"},
+        {"id": 8, "dia": "Miércoles", "hora": "05:15 PM", "modalidad": "Flow", "coach": "Principiantes"},
+        {"id": 9, "dia": "Miércoles", "hora": "06:15 PM", "modalidad": "Power", "coach": "Mayra"},
+        {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "Power", "coach": "Omar Loeza"},
+        {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Power", "coach": "Coquis"},
+        {"id": 12, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Power", "coach": "Coquis"},
+        {"id": 13, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Power", "coach": "Mayra"},
+        {"id": 14, "dia": "Viernes", "hora": "07:15 PM", "modalidad": "Power", "coach": "TEMATICA"}
     ]
 
 if __name__ == "__main__":
