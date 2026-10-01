@@ -678,32 +678,17 @@
         const tipo = document.getElementById('tipoCancelar').value;
 
         if (!telefono) {
-            alert("Por favor ingresa tu número de WhatsApp registrado.");
+            alert("Por favor ingresa tu número de WhatsApp registrado para cancelar.");
             return;
         }
 
-        if (!confirm("¿Estás seguro de que deseas solicitar la cancelación de tu cita?")) {
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/cancelar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telefono: telefono, tipo: tipo })
-            });
-
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.detail || "Error al cancelar la cita.");
-            }
-
-            alert(result.mensaje);
-            location.reload();
-        } catch (err) {
-            alert(err.message);
+        if (confirm(`¿Estás seguro de que deseas solicitar la cancelación de tu cita de ${tipo}?`)) {
+            const mensaje = `Hola Galaxy Room ❌, necesito cancelar mi cita registrada con el teléfono *${telefono}* en la sección de *${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}*.`;
+            window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
         }
     }
     </script>
 </body>
 </html>
+
+    
