@@ -622,18 +622,40 @@
         }
     }
 
-  async function cancelarCita() {
+    async function cancelarCita() {
         const telefono = document.getElementById('telCancelar').value.trim();
         const tipo = document.getElementById('tipoCancelar').value;
 
         if (!telefono) {
-            alert("Por favor ingresa tu número de WhatsApp registrado para cancelar.");
+            alert("Por favor ingresa tu número de WhatsApp registrado.");
             return;
         }
 
-        if (confirm(`¿Estás seguro de que deseas solicitar la cancelación de tu cita de ${tipo}?`)) {
-            const mensaje = `Hola Galaxy Room ❌, necesito cancelar mi cita registrada con el teléfono *${telefono}* en la sección de *${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}*.`;
-            window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+        if (!confirm(`¿Estás seguro de solicitar la cancelación de tu cita de ${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}?`)) {
+            return;
+        }
+
+        try {
+            const endpoint = tipo === 'spinning' ? '/cancelar' : '/cancelar-pilates';
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telefono })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.mensaje || "Cita cancelada correctamente.");
+                document.getElementById('telCancelar').value = '';
+                if(tipo === 'spinning') cargarBicisDisponibles();
+            } else {
+                alert(data.error || "No se encontró una reserva activa con ese número.");
+            }
+        } catch (err) {
+            console.error("Error al cancelar:", err);
+            // Mensaje de respaldo directo a WhatsApp si falla la API
+            const mensajeWhatsApp = `Hola, necesito cancelar mi cita registrada con el número *${telefono}* en *${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}*. ❌`;
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWhatsApp}`, '_blank');
         }
     }
     </script>
