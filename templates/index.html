@@ -627,35 +627,39 @@
         const tipo = document.getElementById('tipoCancelar').value;
 
         if (!telefono) {
-            alert("Por favor ingresa tu número de WhatsApp registrado.");
+            alert("Por favor ingresa tu número de WhatsApp registrado para buscar la cita.");
             return;
         }
 
-        if (!confirm(`¿Estás seguro de solicitar la cancelación de tu cita de ${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}?`)) {
+        if (!confirm(`¿Estás seguro de cancelar tu reserva de ${tipo.toUpperCase()} con el número ${telefono}? Recuerda que debe ser con al menos 1 hora de anticipación.`)) {
             return;
         }
 
         try {
-            const endpoint = tipo === 'spinning' ? '/cancelar' : '/cancelar-pilates';
-            const res = await fetch(endpoint, {
+            const response = await fetch('/api/cancelar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telefono })
+                body: JSON.stringify({ telefono: telefono, tipo: tipo })
             });
 
-            const data = await res.json();
-            if (res.ok) {
-                alert(data.mensaje || "Cita cancelada correctamente.");
-                document.getElementById('telCancelar').value = '';
-                if(tipo === 'spinning') cargarBicisDisponibles();
-            } else {
-                alert(data.error || "No se encontró una reserva activa con ese número.");
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "Error al cancelar la cita.");
             }
+
+            alert(result.mensaje || "Cita cancelada exitosamente.");
+
+            const textoWs = encodeURIComponent(
+                `*CANCELACIÓN DE RESERVA*\n\n` +
+                `📱 *Teléfono:* ${telefono}\n` +
+                `🏋️‍♀️ *Experiencia:* ${tipo.toUpperCase()}\n\n` +
+                `Solicito la cancelación de mi cita dentro del tiempo establecido.`
+            );
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
+
+            location.reload();
         } catch (err) {
-            console.error("Error al cancelar:", err);
-            // Mensaje de respaldo directo a WhatsApp si falla la API
-            const mensajeWhatsApp = `Hola, necesito cancelar mi cita registrada con el número *${telefono}* en *${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}*. ❌`;
-            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${mensajeWhatsApp}`, '_blank');
+            alert(err.message);
         }
     }
     </script>
