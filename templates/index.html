@@ -1,667 +1,1280 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Room - Reservas</title>
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230B0F19' stroke='%2300E5FF' stroke-width='3'/><path d='M38 28 A 6 6 0 1 1 38 16 A 6 6 0 1 1 38 28 Z M32 32 L46 32 L58 48 L48 54 L38 40 L26 40 Z M22 65 C22 52, 34 42, 48 48 L62 38 L72 38' stroke='%2300E5FF' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='34' cy='66' r='12' stroke='%23A855F7' stroke-width='4' fill='none'/><circle cx='68' cy='66' r='12' stroke='%2300E5FF' stroke-width='4' fill='none'/></svg>">
+<meta charset="UTF-8">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { 
-            background: linear-gradient(180deg, rgba(11, 15, 25, 0.88) 0%, rgba(5, 8, 16, 0.94) 100%), 
-                        url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: #FFFFFF; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            transition: background 0.4s ease-in-out;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body.bg-pilates-mode {
-            background: linear-gradient(180deg, rgba(20, 10, 30, 0.85) 0%, rgba(10, 5, 20, 0.92) 100%), 
-                        url('https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1920');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
+<title>Galaxy Room - Reservas</title>
 
-        .glow-title { 
-            text-shadow: 0 0 12px #00E5FF, 0 0 24px #00E5FF, 0 0 36px #A855F7; 
-        }
-        .glow-pilates { 
-            text-shadow: 0 0 12px #C084FC, 0 0 24px #A855F7, 0 0 36px #E879F9; 
-        }
 
-        .bici-btn {
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid #334155;
-            transition: all 0.2s ease;
-        }
-        .bici-btn.seleccionada {
-            background: #00E5FF !important;
-            color: #000000 !important;
-            border-color: #00E5FF !important;
-            box-shadow: 0 0 15px #00E5FF;
-        }
-        .bici-btn.ocupada {
-            background: #ef4444 !important;
-            color: #ffffff !important;
-            border-color: #f87171 !important;
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
 
-        .input-dark {
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid #334155;
-            color: #FFFFFF;
-        }
-        .input-dark:focus {
-            border-color: #C084FC;
-            outline: none;
-            box-shadow: 0 0 8px rgba(192, 132, 252, 0.4);
-        }
-    </style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230B0F19' stroke='%2300E5FF' stroke-width='3'/><path d='M38 28 A 6 6 0 1 1 38 16 A 6 6 0 1 1 38 28 Z M32 32 L46 32 L58 48 L48 54 L38 40 L26 40 Z M22 65 C22 52, 34 42, 48 48 L62 38 L72 38' stroke='%2300E5FF' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='34' cy='66' r='12' stroke='%23A855F7' stroke-width='4' fill='none'/><circle cx='68' cy='66' r='12' stroke='%2300E5FF' stroke-width='4' fill='none'/></svg>">
+
+
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body {
+
+background: linear-gradient(180deg, rgba(11, 15, 25, 0.88) 0%, rgba(5, 8, 16, 0.94) 100%),
+
+url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920');
+
+background-size: cover;
+
+background-position: center;
+
+background-attachment: fixed;
+
+color: #FFFFFF;
+
+font-family: system-ui, -apple-system, sans-serif;
+
+transition: background 0.4s ease-in-out;
+
+}
+
+
+
+body.bg-pilates-mode {
+
+background: linear-gradient(180deg, rgba(20, 10, 30, 0.85) 0%, rgba(10, 5, 20, 0.92) 100%),
+
+url('https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1920');
+
+background-size: cover;
+
+background-position: center;
+
+background-attachment: fixed;
+
+}
+
+
+
+.glow-title {
+
+text-shadow: 0 0 12px #00E5FF, 0 0 24px #00E5FF, 0 0 36px #A855F7;
+
+}
+
+.glow-pilates {
+
+text-shadow: 0 0 12px #C084FC, 0 0 24px #A855F7, 0 0 36px #E879F9;
+
+}
+
+
+
+.bici-card, .cama-card {
+
+background: rgba(15, 23, 42, 0.9);
+
+border: 2px solid #1E293B;
+
+transition: all 0.2s ease-in-out;
+
+}
+
+
+
+.bici-card:hover:not(:disabled), .cama-card:hover:not(:disabled) {
+
+border-color: #00E5FF;
+
+box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+
+}
+
+
+
+.cama-card:hover:not(:disabled) {
+
+border-color: #C084FC;
+
+box-shadow: 0 0 10px rgba(192, 132, 252, 0.4);
+
+}
+
+
+
+.bici-card.seleccionada, .cama-card.seleccionada {
+
+border-color: #00FF88 !important;
+
+background: #064E3B !important;
+
+box-shadow: 0 0 14px #00FF88 !important;
+
+}
+
+
+
+.bici-card.ocupada, .cama-card.ocupada {
+
+background: #7f1d1d !important;
+
+border-color: #ef4444 !important;
+
+opacity: 0.6;
+
+cursor: not-allowed;
+
+}
+
+
+.input-dark {
+
+background: rgba(30, 41, 59, 0.9);
+
+border: 1px solid #334155;
+
+color: #FFFFFF;
+
+}
+
+.input-dark:focus {
+
+border-color: #C084FC;
+
+outline: none;
+
+box-shadow: 0 0 8px rgba(192, 132, 252, 0.4);
+
+}
+
+</style>
+
 </head>
+
 <body class="p-4 max-w-md mx-auto min-h-screen flex flex-col justify-between">
 
-    <div>
-        <!-- SELECTOR DE SALAS -->
-        <div class="w-full mb-4 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl p-3 shadow-xl flex items-center justify-between">
-            <label for="selectorSala" class="text-xs font-bold uppercase tracking-wider text-cyan-400">
-                Experiencia:
-            </label>
-            <select id="selectorSala" onchange="cambiarSeccion(this.value)" class="bg-slate-950 border border-cyan-500/50 text-cyan-300 px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none focus:border-cyan-400 cursor-pointer">
-                <option value="spinning">🚴‍♂️ Spinning Galaxy Room</option>
-                <option value="pilates">🧘‍♀️ Pilates Studio (NUEVO)</option>
-            </select>
-        </div>
 
-        <header class="text-center my-4 flex flex-col items-center">
-            <div id="contenedorLogo" class="w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300">
-                <svg id="logoSpinning" class="w-16 h-16" viewBox="0 0 100 100">
-                    <circle cx="32" cy="66" r="14" stroke="#A855F7" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#A855F7]"/>
-                    <circle cx="68" cy="66" r="14" stroke="#00E5FF" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#00E5FF]"/>
-                    <circle cx="38" cy="22" r="5.5" fill="#00E5FF"/>
-                    <path d="M32 32 L46 32 L58 48 L48 54 L38 40 L26 40 M22 66 C24 50, 36 44, 48 48 L62 38 L72 38" 
-                          stroke="#00E5FF" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"
-                          class="drop-shadow-[0_0_6px_#00E5FF]"/>
-                </svg>
-                <img id="logoPilates" src="/static/pilates-logo.jpeg" alt="Pilates Logo" class="w-full h-full object-cover rounded-full hidden">
-            </div>
-            
-            <h1 id="headerTitulo" class="text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider">Spinning Galaxy</h1>
-            <p class="text-xs text-purple-300 font-bold tracking-[0.2em] mt-1 uppercase">ROOM • LA PIEDAD</p>
-        </header>
 
-        <!-- TABLA COMPARATIVA DE PLANES -->
-        <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
-            <h2 id="tituloTabla" class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">Resumen de Modalidades</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-700 text-slate-400">
-                            <th class="py-2 px-1">Modalidad</th>
-                            <th class="py-2 px-1">Sesiones</th>
-                            <th class="py-2 px-1 text-right">Precio</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpoTabla" class="divide-y divide-slate-800 text-slate-200">
-                        <tr>
-                            <td class="py-2 px-1 font-semibold text-cyan-300">Clase Individual</td>
-                            <td class="py-2 px-1">1 Sesión</td>
-                            <td class="py-2 px-1 text-right font-bold">$50 MXN</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-1 font-semibold text-cyan-300">Mensualidad Promo</td>
-                            <td class="py-2 px-1">3+1/sem</td>
-                            <td class="py-2 px-1 text-right font-bold">$500 MXN</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-1 font-semibold text-purple-300">Mensual Ilimitada</td>
-                            <td class="py-2 px-1">Ilimitadas</td>
-                            <td class="py-2 px-1 text-right font-bold">$700 MXN</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+<div>
 
-        <!-- VISTA SPINNING -->
-        <div id="vistaSpinning">
-            <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
-                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">1. Tus Datos</h2>
-                <div class="space-y-3">
-                    <input type="text" id="nombre" placeholder="Nombre completo" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white placeholder-slate-400">
-                    <input type="tel" id="telefono" placeholder="Teléfono (WhatsApp)" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white placeholder-slate-400">
-                </div>
-            </section>
+<div class="w-full mb-4 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl p-3 shadow-xl flex items-center justify-between">
 
-            <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
-                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">2. Selecciona tu Clase y Modalidad</h2>
-                <div class="space-y-3">
-                    <select id="select-clase" onchange="cargarBicisDisponibles()" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
-                        <option value="">Cargando clases disponibles...</option>
-                    </select>
+<label for="selectorSala" class="text-xs font-bold uppercase tracking-wider text-cyan-400">
 
-                    <div>
-                        <label class="text-[11px] text-slate-400 font-bold uppercase block mb-1">Modalidad de Pago:</label>
-                        <select id="select-modalidad-spinning" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
-                            <option value="Clase Individual ($50 MXN)">💳 Clase Individual — $50 MXN</option>
-                            <option value="Mensualidad Promo 3+1 ($500 MXN)">🔥 Mensualidad Promo (3+1 clases/semana) — $500 MXN</option>
-                            <option value="Mensualidad Ilimitada ($700 MXN)">⭐ Mensualidad Ilimitada — $700 MXN</option>
-                        </select>
-                    </div>
-                </div>
-            </section>
+Experiencia:
 
-            <!-- SELECCIÓN DE BICICLETAS -->
-            <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">3. Elige tu Bicicleta</h2>
-                    <span id="biciSeleccionadaTexto" class="text-xs font-bold text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800">Ninguna</span>
-                </div>
-                
-                <div class="text-center py-2 mb-3 bg-slate-950/60 rounded-lg border border-slate-800 text-[11px] font-bold text-cyan-400 tracking-wider uppercase">
-                    🎧 COACH / ESCENARIO 🎧
-                </div>
+</label>
 
-                <div id="gridBicis" class="space-y-3 mb-4">
-                    <!-- Generado dinámicamente -->
-                </div>
+<select id="selectorSala" onchange="cambiarSeccion(this.value)" class="bg-slate-950 border border-cyan-500/50 text-cyan-300 px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none focus:border-cyan-400 cursor-pointer">
 
-                <div class="flex justify-center space-x-4 text-[10px] text-slate-400 font-medium">
-                    <div class="flex items-center space-x-1"><span class="w-3 h-3 bg-slate-800 border border-slate-700 rounded-sm"></span><span>Disponible</span></div>
-                    <div class="flex items-center space-x-1"><span class="w-3 h-3 bg-cyan-400 rounded-sm"></span><span class="text-cyan-300 font-bold">Tu Selección</span></div>
-                    <div class="flex items-center space-x-1"><span class="w-3 h-3 bg-red-500 rounded-sm"></span><span class="text-red-400 font-bold">Ocupada</span></div>
-                </div>
-            </section>
+<option value="spinning">🚴‍♂️ Spinning Galaxy Room</option>
 
-            <section class="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl mb-5 border border-cyan-500/40 shadow-2xl">
-                <h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <span>💳</span> Datos de Transferencia Bancaria
-                </h2>
-                <div class="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5 text-slate-300">
-                    <p><strong class="text-cyan-300">Banco:</strong> Mercado Pago W</p>
-                    <p><strong class="text-cyan-300">Beneficiario:</strong> Mayra Paola Ramirez Ibarra</p>
-                    <div class="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-700 mt-1">
-                        <span class="font-mono text-cyan-400 font-bold text-xs select-all">722969020075560673</span>
-                        <button type="button" onclick="copiarClabe('722969020075560673')" class="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
-                            Copiar
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
-                    <span class="text-base">📸</span>
-                    <p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
-                </div>
-            </section>
+<option value="pilates">🧘‍♀️ Pilates Studio (NUEVO)</option>
 
-            <div class="bg-amber-950/60 border border-amber-500/50 p-3 rounded-xl mb-5 text-amber-200 text-xs flex items-start space-x-2">
-                <span class="text-base">⚠️</span>
-                <p>
-                    <strong>Aviso importante:</strong> En caso de requerir cancelación, debes realizarla con al menos <strong>1 hora de anticipación</strong> previa a la hora de tu cita. De lo contrario, la sesión será cobrada como si hubieras asistido.
-                </p>
-            </div>
+</select>
 
-            <button type="button" onclick="confirmarReserva()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-cyan-500/30 transition-all uppercase tracking-wider mb-6">
-                Confirmar Reserva
-            </button>
-        </div>
+</div>
 
-        <!-- VISTA PILATES -->
-        <div id="vistaPilates" class="hidden">
-            <form id="formPilates" onsubmit="confirmarReservaPilates(event)" class="space-y-5 mb-8">
-                <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-3">
-                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">1. Datos Personales</h2>
-                    <input type="text" id="nombrePilates" required placeholder="Nombre completo" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
-                    <input type="tel" id="telPilates" required placeholder="Teléfono (WhatsApp)" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
-                    <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Fecha de nacimiento:</label>
-                        <input type="date" id="fechaNacimientoPilates" required class="w-full p-3 rounded-lg input-dark text-sm">
-                    </div>
-                </section>
 
-                <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
-                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">2. Paquete y Horario</h2>
-                    <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Selecciona tu Paquete u Horario:</label>
-                        <select id="paquetePilates" required class="w-full p-3 rounded-lg input-dark text-sm text-white">
-                            <option value="Clase Individual Pilates">💳 Clase Individual Pilates </option>
-                            <option value="Paquete Mensual Pilates">🔥 Pilates Reformer Básico</option>
-                            <option value="Paquete Personalizado / Consulta">⭐ Pilates Reformer Intermedio</option>
-                             <option value="Paquete Personalizado / Consulta">⭐ Pilates Reformer Premium</option>
-                             <option value="Paquete Personalizado / Consulta">⭐ Combo Spinning + Pilates Reformer $1300 MX</option>
-                             <option value="Paquete Personalizado / Consulta">⭐ Combo Spinning + Pilates Reformer $1200 MX </option>
-                            <option value="Paquete Personalizado / Consulta">⭐ Combo Spinning + Pilates Reformer $1000 MX </option>
-                        </select>
-                    </div>
-                </section>
 
-                <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
-                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Personaliza tu Sesión</h2>
-                    
-                    <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Fruta preferida:</label>
-                        <input type="text" id="fruta" placeholder="Escribe la fruta de tu preferencia" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
-                    </div>
+<header class="text-center my-4 flex flex-col items-center">
 
-                    <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Bebida hidratante:</label>
-                        <input type="text" id="bebida" placeholder="Escribe tu bebida hidratante preferida" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
-                    </div>
+<div id="contenedorLogo" class="w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300">
 
-                    <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Personaje / Temática preferida:</label>
-                        <input type="text" id="personaje" placeholder="Escribe tu personaje o temática favorita" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
-                    </div>
-                </section>
+<svg id="logoSpinning" class="w-16 h-16" viewBox="0 0 100 100">
 
-                <section class="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-purple-500/40 shadow-2xl">
-                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                        <span>💳</span> Datos de Transferencia Bancaria
-                    </h2>
-                    <div class="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5 text-slate-300">
-                        <p><strong class="text-purple-300">Banco:</strong> Mercado Pago W</p>
-                        <p><strong class="text-purple-300">Beneficiario:</strong> Mayra Paola Ramirez Ibarra</p>
-                        <div class="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-700 mt-1">
-                            <span class="font-mono text-purple-300 font-bold text-xs select-all">722969020075560673</span>
-                            <button type="button" onclick="copiarClabe('722969020075560673')" class="bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
-                                Copiar
-                            </button>
-                        </div>
-                    </div>
-                    <div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
-                        <span class="text-base">📸</span>
-                        <p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
-                    </div>
-                </section>
+<circle cx="32" cy="66" r="14" stroke="#A855F7" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#A855F7]"/>
 
-                <button type="submit" class="w-full py-4 rounded-xl font-extrabold uppercase tracking-wider bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all">
-                    Reservar Lugar Pilates
-                </button>
-            </form>
-        </div>
+<circle cx="68" cy="66" r="14" stroke="#00E5FF" stroke-width="4.5" fill="none" class="drop-shadow-[0_0_8px_#00E5FF]"/>
 
-        <!-- SECCIÓN RESTAURADA: CANCELAR CITA MEDIANTE WHATSAPP -->
-        <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-8 border border-red-500/30 shadow-2xl">
-            <h2 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <span>❌</span> ¿Necesitas Cancelar tu Cita?
-            </h2>
-            <p class="text-[11px] text-slate-300 mb-3">
-                Puedes cancelar tu cita ingresando tu número de WhatsApp registrado (con al menos <strong>1 hora de anticipación</strong>).
-            </p>
-            <div class="space-y-2">
-                <input type="tel" id="telCancelar" placeholder="Teléfono WhatsApp registrado" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-2.5 text-xs focus:outline-none focus:border-red-400 text-white placeholder-slate-400">
-                <select id="tipoCancelar" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-2.5 text-xs focus:outline-none focus:border-red-400 text-white">
-                    <option value="spinning">Spinning Galaxy Room</option>
-                    <option value="pilates">Pilates Studio</option>
-                </select>
-                <button type="button" onclick="cancelarCita()" class="w-full py-2.5 bg-red-600/80 hover:bg-red-500 text-white font-bold rounded-lg text-xs transition-all uppercase tracking-wider shadow-md">
-                    Cancelar Mi Cita
-                </button>
-            </div>
-        </section>
+<circle cx="38" cy="22" r="5.5" fill="#00E5FF"/>
 
-    </div>
+<path d="M32 32 L46 32 L58 48 L48 54 L38 40 L26 40 M22 66 C24 50, 36 44, 48 48 L62 38 L72 38"
 
-    <!-- BOTÓN RESET PRUEBAS -->
-    <button id="btnResetAdmin" type="button" onclick="localStorage.clear(); location.reload();" 
-            class="hidden fixed bottom-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 z-50 uppercase tracking-wider border border-red-400">
-        🧹 Resetear Pruebas
-    </button>
+stroke="#00E5FF" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"
 
-    <script>
-    const NUMERO_ADMIN_WHATSAPP = "523522083263";
-    let biciSeleccionada = null;
-    let bicisOcupadas = [];
+class="drop-shadow-[0_0_6px_#00E5FF]"/>
 
-    document.addEventListener("DOMContentLoaded", () => {
-        if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
-            document.getElementById('btnResetAdmin').classList.remove('hidden');
-        }
-        cargarClases();
-    });
+</svg>
 
-    function copiarClabe(clabe) {
-        navigator.clipboard.writeText(clabe);
-        alert("¡CLABE copiada al portapapeles!");
-    }
+<img id="logoPilates" src="/static/pilates-logo.jpeg" alt="Pilates Logo" class="w-full h-full object-cover rounded-full hidden">
 
-    function cambiarSeccion(valor) {
-        const vistaSpinning = document.getElementById('vistaSpinning');
-        const vistaPilates = document.getElementById('vistaPilates');
-        const headerTitulo = document.getElementById('headerTitulo');
-        const logoSpinning = document.getElementById('logoSpinning');
-        const logoPilates = document.getElementById('logoPilates');
-        const contenedorLogo = document.getElementById('contenedorLogo');
-        const tituloTabla = document.getElementById('tituloTabla');
-        const cuerpoTabla = document.getElementById('cuerpoTabla');
+</div>
 
-        if (valor === 'spinning') {
-            document.body.classList.remove('bg-pilates-mode');
-            vistaSpinning.classList.remove('hidden');
-            vistaPilates.classList.add('hidden');
-            
-            headerTitulo.innerText = "Spinning Galaxy";
-            headerTitulo.className = "text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider";
 
-            logoSpinning.classList.remove('hidden');
-            logoPilates.classList.add('hidden');
-            contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+<h1 id="headerTitulo" class="text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider">Spinning Galaxy</h1>
 
-            tituloTabla.className = "text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3";
-            cuerpoTabla.innerHTML = `
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-cyan-300">Clase Individual</td>
-                    <td class="py-2 px-1">1 Sesión</td>
-                    <td class="py-2 px-1 text-right font-bold">$50 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-cyan-300">Mensualidad Promo</td>
-                    <td class="py-2 px-1">3+1/sem</td>
-                    <td class="py-2 px-1 text-right font-bold">$500 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensual Ilimitada</td>
-                    <td class="py-2 px-1">Ilimitadas</td>
-                    <td class="py-2 px-1 text-right font-bold">$700 MXN</td>
-                </tr>
-            `;
-        } else {
-            document.body.classList.add('bg-pilates-mode');
-            vistaSpinning.classList.add('hidden');
-            vistaPilates.classList.remove('hidden');
-            
-            headerTitulo.innerText = "Pilates Studio";
-            headerTitulo.className = "text-3xl font-black text-purple-400 glow-pilates uppercase tracking-wider";
+<p class="text-xs text-purple-300 font-bold tracking-[0.2em] mt-1 uppercase">ROOM • LA PIEDAD</p>
 
-            logoSpinning.classList.add('hidden');
-            logoPilates.classList.remove('hidden');
-            contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-1 border-2 border-purple-400 shadow-xl shadow-purple-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+</header>
 
-            tituloTabla.className = "text-xs font-bold text-purple-400 uppercase tracking-wider mb-3";
-            cuerpoTabla.innerHTML = `
-            
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1"> Pilates Reformer Básico Clases de pilates 2 x semana</td>
-                    <td class="py-2 px-1 text-right font-bold">$800 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1"> Pilates Reformer Internmedio 3 x semana</td>
-                    <td class="py-2 px-1 text-right font-bold">$1100 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Pilates Reformer Premium ( Clases de pilates 5 x semana)</td>
-                    <td class="py-2 px-1 text-right font-bold">$1600 MXN</td>
-                </tr> 
-                    <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Pilates Reformer Clase Individual</td>
-                    <td class="py-2 px-1">1 Sesión</td>
-                    <td class="py-2 px-1 text-right font-bold">$120 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (20 clases de Spinning + 8 de pilates Performer)</td>
-                    <td class="py-2 px-1 text-right font-bold">$1300 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (16 clases de Spinning + 8 de pilates Performer)</td>
-                    <td class="py-2 px-1 text-right font-bold">$1200 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (8 clases de Spinning + 8 de pilates Performer)</td>
-                    <td class="py-2 px-1 text-right font-bold">$1000 MXN</td>
-                </tr> 
-                
-                
-            `;
-        }
-    }
 
-    async function cargarClases() {
-        try {
-            const res = await fetch('/clases');
-            const clases = await res.json();
-            const select = document.getElementById('select-clase');
-            select.innerHTML = '';
-            clases.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.dia} - ${c.hora} | ${c.modalidad} (${c.coach})</option>`;
-            });
-            if (clases.length > 0) {
-                cargarBicisDisponibles();
-            }
-        } catch (err) {
-            console.error("Error cargando clases:", err);
-        }
-    }
 
-    async function cargarBicisDisponibles() {
-        const claseId = document.getElementById('select-clase').value;
-        if (!claseId) return;
+<!-- VISTA SPINNING -->
 
-        biciSeleccionada = null;
-        document.getElementById('biciSeleccionadaTexto').innerText = "Ninguna";
+<div id="vistaSpinning">
 
-        try {
-            const res = await fetch(`/api/reservas/${claseId}`);
-            const data = await res.json();
-            bicisOcupadas = data.bicis_ocupadas || [];
-            renderGridBicis();
-        } catch (err) {
-            console.error("Error al cargar ocupación de bicis:", err);
-            bicisOcupadas = [];
-            renderGridBicis();
-        }
-    }
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
 
-    function renderGridBicis() {
-        const grid = document.getElementById('gridBicis');
-        grid.innerHTML = '';
+<h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">1. Tus Datos</h2>
 
-        const filas = [
-            { nombre: "FRENTE", bicis: [1, 2] },
-            { nombre: "CENTRO", bicis: [3, 4, 5, 6] },
-            { nombre: "ATRÁS", bicis: [7, 8, 9, 10] }
-        ];
+<div class="space-y-3">
 
-        filas.forEach(fila => {
-            const filaDiv = document.createElement('div');
-            
-            const tituloFila = document.createElement('p');
-            tituloFila.className = "text-center text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase";
-            tituloFila.innerText = fila.nombre;
-            filaDiv.appendChild(tituloFila);
+<input type="text" id="nombre" placeholder="Nombre completo" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white placeholder-slate-400">
 
-            const contenedorBicis = document.createElement('div');
-            contenedorBicis.className = fila.bicis.length === 2 
-                ? "flex justify-center gap-2 max-w-[180px] mx-auto" 
-                : "grid grid-cols-4 gap-2";
+<input type="tel" id="telefono" placeholder="Teléfono (WhatsApp)" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white placeholder-slate-400">
 
-            fila.bicis.forEach(numero => {
-                const ocupada = bicisOcupadas.includes(numero);
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `bici-btn ${fila.bicis.length === 2 ? 'w-20' : 'w-full'} py-3 rounded-lg font-extrabold text-sm flex flex-col items-center justify-center gap-1 ${ocupada ? 'ocupada' : ''}`;
-                btn.innerHTML = `<span>🚲</span><span>${numero}</span>`;
-                
-                if (ocupada) {
-                    btn.disabled = true;
-                } else {
-                    btn.onclick = () => seleccionarBici(numero, btn);
-                }
+</div>
 
-                contenedorBicis.appendChild(btn);
-            });
+</section>
 
-            filaDiv.appendChild(contenedorBicis);
-            grid.appendChild(filaDiv);
-        });
-    }
 
-    function seleccionarBici(numero, elemento) {
-        document.querySelectorAll('.bici-btn').forEach(b => b.classList.remove('seleccionada'));
-        biciSeleccionada = numero;
-        elemento.classList.add('seleccionada');
-        document.getElementById('biciSeleccionadaTexto').innerText = `Bici #${numero}`;
-    }
 
-    async function confirmarReserva() {
-        const nombre = document.getElementById('nombre').value.trim();
-        const telefono = document.getElementById('telefono').value.trim();
-        const claseSelect = document.getElementById('select-clase');
-        const claseId = claseSelect.value;
-        const textoClaseSeleccionada = claseSelect.options[claseSelect.selectedIndex].text;
-        const modalidad = document.getElementById('select-modalidad-spinning').value;
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
 
-        if (!nombre || !telefono) {
-            alert("Por favor completa tu nombre y número de WhatsApp.");
-            return;
-        }
-        if (!biciSeleccionada) {
-            alert("Por favor selecciona una bicicleta.");
-            return;
-        }
+<h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">2. Selecciona tu Clase y Modalidad</h2>
 
-        try {
-            const response = await fetch('/api/reservar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    clase_id: claseId,
-                    bicicleta: String(biciSeleccionada),
-                    nombre: nombre,
-                    telefono: telefono,
-                    modalidad: modalidad
-                })
-            });
+<div class="space-y-3">
 
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.detail || "Error al registrar la reserva.");
-            }
+<select id="select-clase" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
 
-            alert(result.mensaje);
-            
-            const textoWs = encodeURIComponent(
-                `*NUEVA RESERVA - SPINNING GALAXY ROOM*\n\n` +
-                `👤 *Nombre:* ${nombre}\n` +
-                `📱 *Teléfono:* ${telefono}\n` +
-                `🚲 *Bicicleta:* #${biciSeleccionada}\n` +
-                `📅 *Clase:* ${textoClaseSeleccionada}\n` +
-                `💳 *Modalidad:* ${modalidad}\n\n` +
-                `*Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita en caso de requerirlo, y de no ser asi se me cobrara de todas formas*\n\n` +
-                `Adjunto mi comprobante de pago.`
-            );
-            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
+<option value="">Cargando clases disponibles...</option>
 
-            location.reload();
-        } catch (err) {
-            alert(err.message);
-            cargarBicisDisponibles();
-        }
-    }
+</select>
 
-    async function confirmarReservaPilates(event) {
-        event.preventDefault();
-        const nombre = document.getElementById('nombrePilates').value.trim();
-        const telefono = document.getElementById('telPilates').value.trim();
-        const fechaNacimiento = document.getElementById('fechaNacimientoPilates').value;
-        const paquete = document.getElementById('paquetePilates').value;
-        const fruta = document.getElementById('fruta').value.trim() || "No especificada";
-        const bebida = document.getElementById('bebida').value.trim() || "No especificada";
-        const personaje = document.getElementById('personaje').value.trim() || "No especificado";
 
-        try {
-            const response = await fetch('/api/pilates/reservar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombre: nombre,
-                    telefono: telefono,
-                    fecha_nacimiento: fechaNacimiento,
-                    paquete: paquete,
-                    fruta: fruta,
-                    bebida: bebida,
-                    personaje: personaje
-                })
-            });
 
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.detail || "Error al registrar la reserva de Pilates.");
-            }
+<div>
 
-            alert(result.mensaje);
+<label class="text-[11px] text-slate-400 font-bold uppercase block mb-1">Modalidad de Pago:</label>
 
-            const textoWs = encodeURIComponent(
-                `*NUEVA RESERVA - PILATES STUDIO*\n\n` +
-                `👤 *Nombre:* ${nombre}\n` +
-                `📱 *Teléfono:* ${telefono}\n` +
-                `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}\n` +
-                `📦 *Paquete:* ${paquete}\n` +
-                `🍎 *Fruta Preferida:* ${fruta}\n` +
-                `🥤 *Bebida Hidratante:* ${bebida}\n` +
-                `⭐ *Personaje/Temática:* ${personaje}\n\n` +
-                `*Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita en caso de requerirlo, y de no ser asi se me cobrara de todas formas*\n\n` +
-                `Adjunto mi comprobante de pago.`
-            );
-            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
+<select id="select-modalidad-spinning" class="w-full bg-slate-800/90 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
 
-            location.reload();
-        } catch (err) {
-            alert(err.message);
-        }
-    }
+<option value="Clase Individual ($50 MXN)">💳 Clase Individual — $50 MXN</option>
 
-    async function cancelarCita() {
-        const telefono = document.getElementById('telCancelar').value.trim();
-        const tipo = document.getElementById('tipoCancelar').value;
+<option value="Mensualidad Promo 3+1 ($500 MXN)">🔥 Mensualidad Promo (3+1 clases/semana) — $500 MXN</option>
 
-        if (!telefono) {
-            alert("Por favor ingresa tu número de WhatsApp registrado para buscar la cita.");
-            return;
-        }
+<option value="Mensualidad Ilimitada ($700 MXN)">⭐ Mensualidad Ilimitada — $700 MXN</option>
 
-        if (!confirm(`¿Estás seguro de cancelar tu reserva de ${tipo.toUpperCase()} con el número ${telefono}? Recuerda que debe ser con al menos 1 hora de anticipación.`)) {
-            return;
-        }
+</select>
 
-        try {
-            const response = await fetch('/api/cancelar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telefono: telefono, tipo: tipo })
-            });
+</div>
 
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.detail || "Error al cancelar la cita.");
-            }
+</div>
 
-            alert(result.mensaje || "Cita cancelada exitosamente.");
+</section>
 
-            const textoWs = encodeURIComponent(
-                `*CANCELACIÓN DE RESERVA*\n\n` +
-                `📱 *Teléfono:* ${telefono}\n` +
-                `🏋️‍♀️ *Experiencia:* ${tipo.toUpperCase()}\n\n` +
-                `Solicito la cancelación de mi cita dentro del tiempo establecido.`
-            );
-            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
 
-            location.reload();
-        } catch (err) {
-            alert(err.message);
-        }
-    }
-    </script>
+
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-5 border border-slate-800 shadow-2xl">
+
+<div class="flex justify-between items-center mb-1">
+
+<h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">3. Elige tu Bici</h2>
+
+<span id="labelBiciSeleccionada" class="text-xs font-extrabold text-emerald-400">Ninguna seleccionada</span>
+
+</div>
+
+<p class="text-[11px] text-slate-400 mb-4">Selecciona un lugar disponible</p>
+
+
+
+<div class="w-full py-2 bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 text-center text-xs font-bold rounded-lg mb-6 uppercase tracking-widest shadow-inner">
+
+🎧 Tarima Coach / Escenario
+
+</div>
+
+
+
+<div id="mapa-bicis" class="space-y-4"></div>
+
+</section>
+
+
+
+<section class="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl mb-5 border border-cyan-500/40 shadow-2xl">
+
+<h2 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+
+<span>💳</span> Datos de Transferencia Bancaria
+
+</h2>
+
+<div class="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5 text-slate-300">
+
+<p><strong class="text-cyan-300">Banco:</strong> Mercado Pago W</p>
+
+<p><strong class="text-cyan-300">Beneficiario:</strong> Mayra Paola Ramirez Ibarra</p>
+
+<div class="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-700 mt-1">
+
+<span class="font-mono text-cyan-400 font-bold text-xs select-all">722969020075560673</span>
+
+<button type="button" onclick="copiarClabe('722969020075560673')" class="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
+
+Copiar
+
+</button>
+
+</div>
+
+</div>
+
+<div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
+
+<span class="text-base">📸</span>
+
+<p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
+
+</div>
+
+</section>
+
+
+
+<div class="bg-amber-950/60 border border-amber-500/50 p-3 rounded-xl mb-5 text-amber-200 text-xs flex items-start space-x-2">
+
+<span class="text-base">⚠️</span>
+
+<p>
+
+<strong>Aviso importante:</strong> En caso de requerir cancelación, debes realizarla con al menos <strong>1 hora de anticipación</strong> previa a la hora de tu cita. De lo contrario, la sesión será cobrada como si hubieras asistido.
+
+</p>
+
+</div>
+
+
+
+<button type="button" onclick="confirmarReserva()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-cyan-500/30 transition-all uppercase tracking-wider mb-6">
+
+Confirmar Reserva
+
+</button>
+
+
+
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-8 border border-red-900/50 shadow-2xl">
+
+<h2 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+
+<span>🚫</span> ¿Necesitas cancelar una reserva?
+
+</h2>
+
+<p class="text-[11px] text-slate-400 mb-3">
+
+Ingresa el número de teléfono con el que reservaste para gestionar tus reservas activas.
+
+</p>
+
+<div class="flex gap-2 mb-3">
+
+<input type="tel" id="telCancelar" placeholder="Tu número de WhatsApp" class="flex-1 bg-slate-800/90 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-red-400 text-white placeholder-slate-400">
+
+<button type="button" onclick="buscarReservasParaCancelar()" class="bg-red-600/80 hover:bg-red-500 text-white font-bold px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all">
+
+Buscar
+
+</button>
+
+</div>
+
+<div id="listaReservasCancelar" class="space-y-2 hidden"></div>
+
+</section>
+
+</div>
+
+
+
+<!-- VISTA PILATES -->
+
+<div id="vistaPilates" class="hidden">
+
+<form id="formPilates" onsubmit="confirmarReservaPilates(event)" class="space-y-5 mb-8">
+
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-3">
+
+<h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">1. Datos Personales</h2>
+
+<input type="text" id="nombrePilates" required placeholder="Nombre completo" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+
+<input type="tel" id="telPilates" required placeholder="Teléfono (WhatsApp)" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+
+<div>
+
+<label class="text-xs text-slate-400 mb-1 block">Fecha de nacimiento:</label>
+
+<input type="date" id="fechaNacimientoPilates" required class="w-full p-3 rounded-lg input-dark text-sm">
+
+</div>
+
+</section>
+
+
+
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
+
+<h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">2. Evento / Paquete y Horario</h2>
+
+<div>
+
+<label class="text-xs text-slate-400 mb-1 block">Selecciona tu Paquete u Horario Especial:</label>
+
+<select id="paquetePilates" required onchange="alCambiarOpcionPilates()" class="w-full p-3 rounded-lg input-dark text-sm text-white">
+
+<optgroup label="✨ Evento Especial (Viernes 11 Sep)">
+
+<option value="Evento Pilates 5:00 PM ($380 MXN)">🎉 Evento Pilates — 5:00 PM ($380 MXN)</option>
+
+<option value="Evento Pilates 6:00 PM ($380 MXN)">🎉 Evento Pilates — 6:00 PM ($380 MXN)</option>
+
+<option value="Evento Pilates 7:00 PM ($380 MXN)">🎉 Evento Pilates — 7:00 PM ($380 MXN)</option>
+
+<option value="Clase Prueba 4:00 PM ($100 MXN)">✨ Clase Prueba — 4:00 PM ($100 MXN - 5 Cupos)</option>
+
+</optgroup>
+
+<optgroup label="🧘 Clases Regulares">
+
+<option value="Clase Individual Pilates">💳 Clase Individual Pilates</option>
+
+<option value="Paquete Mensual Pilates">🔥 Paquete Mensual Pilates</option>
+
+<option value="Paquete Personalizado / Consulta">⭐ Paquete Personalizado</option>
+
+</optgroup>
+
+</select>
+
+</div>
+
+</section>
+
+
+
+<!-- SECCIÓN MAPA DE CAMAS DE PILATES (5 CAMAS) -->
+
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-purple-500/30 shadow-2xl">
+
+<div class="flex justify-between items-center mb-1">
+
+<h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Elige tu Cama (5 lugares)</h2>
+
+<span id="labelCamaSeleccionada" class="text-xs font-extrabold text-purple-300">Ninguna seleccionada</span>
+
+</div>
+
+<p class="text-[11px] text-slate-400 mb-3">Distribución de sala: 2 a la izquierda y 3 a la derecha.</p>
+
+
+
+<div class="w-full py-1.5 bg-purple-950/80 text-purple-300 border border-purple-500/40 text-center text-[11px] font-bold rounded-lg mb-4 uppercase tracking-widest shadow-inner">
+
+🧘 Instructor / Frente
+
+</div>
+
+
+
+<div class="grid grid-cols-2 gap-4">
+
+<div class="space-y-2">
+
+<p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Izquierdo (2)</p>
+
+<div id="cama-1-container"></div>
+
+<div id="cama-2-container"></div>
+
+</div>
+
+
+
+<div class="space-y-2">
+
+<p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Derecho (3)</p>
+
+<div id="cama-3-container"></div>
+
+<div id="cama-4-container"></div>
+
+<div id="cama-5-container"></div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
+
+<h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">4. Personaliza tu Sesión</h2>
+
+
+<div>
+
+<label class="text-xs text-slate-400 mb-1 block">Fruta preferida:</label>
+
+<input type="text" id="fruta" placeholder="Escribe la fruta de tu preferencia" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+
+</div>
+
+
+
+<div>
+
+<label class="text-xs text-slate-400 mb-1 block">Bebida hidratante:</label>
+
+<input type="text" id="bebida" placeholder="Escribe tu bebida hidratante preferida" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+
+</div>
+
+
+
+<div>
+
+<label class="text-xs text-slate-400 mb-1 block">Personaje / Temática preferida:</label>
+
+<input type="text" id="personaje" placeholder="Escribe tu personaje o temática favorita" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
+
+</div>
+
+</section>
+
+
+
+<section class="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-purple-500/40 shadow-2xl">
+
+<h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+
+<span>💳</span> Datos de Transferencia Bancaria
+
+</h2>
+
+<div class="bg-slate-950/80 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5 text-slate-300">
+
+<p><strong class="text-purple-300">Banco:</strong> Mercado Pago W</p>
+
+<p><strong class="text-purple-300">Beneficiario:</strong> Mayra Paola Ramirez Ibarra</p>
+
+<div class="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-700 mt-1">
+
+<span class="font-mono text-purple-300 font-bold text-xs select-all">722969020075560673</span>
+
+<button type="button" onclick="copiarClabe('722969020075560673')" class="bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
+
+Copiar
+
+</button>
+
+</div>
+
+</div>
+
+<div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
+
+<span class="text-base">📸</span>
+
+<p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
+
+</div>
+
+</section>
+
+
+
+<button type="submit" class="w-full py-4 rounded-xl font-extrabold uppercase tracking-wider bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all">
+
+Reservar Lugar Pilates
+
+</button>
+
+</form>
+
+</div>
+
+
+
+</div>
+
+
+
+<!-- BOTÓN FLOTANTE MODO ADMIN/PRUEBAS -->
+
+<button id="btnResetAdmin" type="button" onclick="localStorage.clear(); location.reload();"
+
+class="hidden fixed bottom-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 z-50 uppercase tracking-wider border border-red-400">
+
+🧹 Resetear Pruebas
+
+</button>
+
+
+
+<script>
+
+let biciSeleccionada = null;
+
+let camaSeleccionada = null;
+
+let listaClasesGlobal = [];
+
+const NUMERO_ADMIN_WHATSAPP = "523522083263";
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
+
+document.getElementById('btnResetAdmin').classList.remove('hidden');
+
+}
+
+
+
+cargarClases();
+
+renderizarCamasPilates();
+
+});
+
+
+
+function copiarClabe(clabe) {
+
+navigator.clipboard.writeText(clabe);
+
+alert("¡CLABE copiada al portapapeles!");
+
+}
+
+
+
+function cambiarSeccion(valor) {
+
+const vistaSpinning = document.getElementById('vistaSpinning');
+
+const vistaPilates = document.getElementById('vistaPilates');
+
+const headerTitulo = document.getElementById('headerTitulo');
+
+const logoSpinning = document.getElementById('logoSpinning');
+
+const logoPilates = document.getElementById('logoPilates');
+
+const contenedorLogo = document.getElementById('contenedorLogo');
+
+
+
+if (valor === 'spinning') {
+
+document.body.classList.remove('bg-pilates-mode');
+
+vistaSpinning.classList.remove('hidden');
+
+vistaPilates.classList.add('hidden');
+
+
+headerTitulo.innerText = "Spinning Galaxy";
+
+headerTitulo.className = "text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider";
+
+
+
+logoSpinning.classList.remove('hidden');
+
+logoPilates.classList.add('hidden');
+
+contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-3 border-2 border-cyan-400 shadow-xl shadow-cyan-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+
+} else {
+
+document.body.classList.add('bg-pilates-mode');
+
+vistaSpinning.classList.add('hidden');
+
+vistaPilates.classList.remove('hidden');
+
+
+headerTitulo.innerText = "Pilates Studio";
+
+headerTitulo.className = "text-3xl font-black text-purple-400 glow-pilates uppercase tracking-wider";
+
+
+
+logoSpinning.classList.add('hidden');
+
+logoPilates.classList.remove('hidden');
+
+contenedorLogo.className = "w-24 h-24 mb-3 rounded-full bg-slate-950/90 p-1 border-2 border-purple-400 shadow-xl shadow-purple-500/40 flex items-center justify-center relative overflow-hidden transition-all duration-300";
+
+}
+
+}
+
+
+
+async function cargarClases() {
+
+try {
+
+const res = await fetch('/clases');
+
+const clases = await res.json();
+
+listaClasesGlobal = clases;
+
+const select = document.getElementById('select-clase');
+
+select.innerHTML = '';
+
+clases.forEach(c => {
+
+select.innerHTML += `<option value="${c.id}">${c.dia} - ${c.hora} | ${c.modalidad} (${c.coach})</option>`;
+
+});
+
+select.setAttribute("onchange", "cargarBicis()");
+
+cargarBicis();
+
+} catch (err) {
+
+console.error("Error cargando clases:", err);
+
+}
+
+}
+
+
+
+async function cargarBicis() {
+
+try {
+
+let bicis = [];
+
+try {
+
+const resBicis = await fetch('/bicicletas');
+
+if (resBicis.ok) {
+
+bicis = await resBicis.json();
+
+}
+
+} catch (e) {
+
+console.log("Servidor no respondió /bicicletas, usando respaldo predeterminado");
+
+}
+
+
+
+if (!bicis || bicis.length === 0) {
+
+bicis = [
+
+{ id: 1, numero: 1, fila: "Frente" },
+
+{ id: 2, numero: 2, fila: "Frente" },
+
+{ id: 3, numero: 3, fila: "Frente" },
+
+{ id: 4, numero: 4, fila: "Centro" },
+
+{ id: 5, numero: 5, fila: "Centro" },
+
+{ id: 6, numero: 6, fila: "Centro" },
+
+{ id: 7, numero: 7, fila: "Centro" },
+
+{ id: 8, numero: 8, fila: "Atrás" },
+
+{ id: 9, numero: 9, fila: "Atrás" },
+
+{ id: 10, numero: 10, fila: "Atrás" }
+
+];
+
+}
+
+
+
+const selectClase = document.getElementById('select-clase');
+
+const claseId = selectClase ? parseInt(selectClase.value) : null;
+
+const fechaHoy = new Date().toISOString().split('T')[0];
+
+
+let ocupadasAPI = [];
+
+if (claseId) {
+
+try {
+
+const resApi = await fetch(`/api/reservas?clase_id=${claseId}&fecha=${fechaHoy}`);
+
+if (resApi.ok) {
+
+const dataApi = await resApi.json();
+
+ocupadasAPI = dataApi.bicis_ocupadas || [];
+
+}
+
+} catch (e) {
+
+console.error("Error consultando servidor de reservas:", e);
+
+}
+
+}
+
+
+
+const contenedor = document.getElementById('mapa-bicis');
+
+contenedor.innerHTML = '';
+
+
+
+biciSeleccionada = null;
+
+document.getElementById('labelBiciSeleccionada').innerText = "Ninguna seleccionada";
+
+document.getElementById('labelBiciSeleccionada').className = "text-xs font-bold text-slate-400";
+
+
+
+const ordenFilas = ["Frente", "Centro", "Atrás"];
+
+const filas = { "Frente": [], "Centro": [], "Atrás": [] };
+
+
+
+bicis.forEach(b => {
+
+const f = b.fila || "Centro";
+
+if (filas[f]) {
+
+filas[f].push(b);
+
+} else {
+
+filas["Centro"].push(b);
+
+}
+
+});
+
+
+
+ordenFilas.forEach(nombreFila => {
+
+const listaBicis = filas[nombreFila];
+
+if (listaBicis.length > 0) {
+
+let htmlFila = `<div class="text-center"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Fila ${nombreFila}</p><div class="flex justify-center gap-2 mb-3">`;
+
+listaBicis.forEach(b => {
+
+const numBici = b.numero || b.id;
+
+const estaOcupada = ocupadasAPI.includes(numBici) || ocupadasAPI.includes(b.id);
+
+
+if (estaOcupada) {
+
+htmlFila += `
+
+<button type="button" disabled class="bici-card ocupada w-11 h-11 rounded-xl flex flex-col items-center justify-center">
+
+<span class="text-xs font-bold text-red-200">#${numBici}</span>
+
+</button>
+
+`;
+
+} else {
+
+htmlFila += `
+
+<button type="button" onclick="seleccionarBici(${numBici})" id="bici-${numBici}" class="bici-card w-11 h-11 rounded-xl flex flex-col items-center justify-center">
+
+<span class="text-xs font-bold">#${numBici}</span>
+
+</button>
+
+`;
+
+}
+
+});
+
+htmlFila += `</div></div>`;
+
+contenedor.innerHTML += htmlFila;
+
+}
+
+});
+
+} catch (err) {
+
+console.error("Error cargando bicis:", err);
+
+}
+
+}
+
+
+
+function seleccionarBici(numeroBici) {
+
+document.querySelectorAll('.bici-card:not(.ocupada)').forEach(el => el.classList.remove('seleccionada'));
+
+const btn = document.getElementById(`bici-${numeroBici}`);
+
+if (btn) {
+
+btn.classList.add('seleccionada');
+
+biciSeleccionada = numeroBici;
+
+const label = document.getElementById('labelBiciSeleccionada');
+
+label.innerText = `Bici #${numeroBici} elegida`;
+
+label.className = "text-xs font-extrabold text-emerald-400";
+
+}
+
+}
+
+
+
+async function confirmarReserva() {
+
+const nombre = document.getElementById('nombre').value.trim();
+
+const telefono = document.getElementById('telefono').value.trim();
+
+
+if (!nombre || !telefono) {
+
+alert("Por favor completa tu nombre y número de teléfono.");
+
+return;
+
+}
+
+
+
+if (!biciSeleccionada) {
+
+alert("Por favor selecciona una bicicleta disponible.");
+
+return;
+
+}
+
+
+
+try {
+
+const res = await fetch('/api/reservar', {
+
+method: 'POST',
+
+headers: { 'Content-Type': 'application/json' },
+
+body: JSON.stringify({
+
+bicicleta: String(biciSeleccionada),
+
+nombre: nombre,
+
+telefono: telefono
+
+})
+
+});
+
+
+
+const data = await res.json();
+
+if (!res.ok) {
+
+throw new Error(data.detail || "Error al procesar la reserva");
+
+}
+
+
+
+alert("¡Reserva registrada con éxito!");
+
+
+
+const mensaje = `Hola! Realicé mi reserva para Spinning Galaxy Room:\n\n` +
+
+`👤 *Nombre:* ${nombre}\n` +
+
+`📞 *Teléfono:* ${telefono}\n` +
+
+`🚴‍♂️ *Bicicleta:* #${biciSeleccionada}\n\n` +
+
+`Adjunto mi comprobante de pago.`;
+
+
+
+window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+
+cargarBicis();
+
+
+
+} catch (err) {
+
+alert(`Error al reservar: ${err.message}`);
+
+}
+
+}
+
+
+
+function alCambiarOpcionPilates() {
+
+renderizarCamasPilates();
+
+}
+
+
+
+async function renderizarCamasPilates() {
+
+const paquete = document.getElementById('paquetePilates').value;
+
+
+let ocupadas = [];
+
+try {
+
+const resApi = await fetch(`/api/pilates/reservas?paquete=${encodeURIComponent(paquete)}`);
+
+if (resApi.ok) {
+
+const dataApi = await resApi.json();
+
+ocupadas = dataApi.camas_ocupadas || dataApi.ocupadas || [];
+
+}
+
+} catch (e) {
+
+console.error("Error al consultar camas ocupadas:", e);
+
+}
+
+
+
+camaSeleccionada = null;
+
+document.getElementById('labelCamaSeleccionada').innerText = "Ninguna seleccionada";
+
+document.getElementById('labelCamaSeleccionada').className = "text-xs font-bold text-purple-300";
+
+
+
+for (let i = 1; i <= 5; i++) {
+
+const cont = document.getElementById(`cama-${i}-container`);
+
+if (!cont) continue;
+
+
+
+const estaOcupada = ocupadas.includes(i) || ocupadas.includes(String(i));
+
+if (estaOcupada) {
+
+cont.innerHTML = `
+
+<button type="button" disabled class="cama-card ocupada w-full py-2.5 rounded-lg flex items-center justify-between px-3">
+
+<span class="text-xs font-bold text-red-200">🧘‍♀️ Cama #${i}</span>
+
+<span class="text-[10px] uppercase font-bold text-red-300 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/40">Ocupada</span>
+
+</button>`;
+
+} else {
+
+cont.innerHTML = `
+
+<button type="button" onclick="seleccionarCama(${i})" id="cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3">
+
+<span class="text-xs font-bold text-slate-200">🧘‍♀️ Cama #${i}</span>
+
+<span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">Disponible</span>
+
+</button>`;
+
+}
+
+}
+
+}
+
+
+
+function seleccionarCama(numCama) {
+
+document.querySelectorAll('.cama-card:not(.ocupada)').forEach(el => el.classList.remove('seleccionada'));
+
+const btn = document.getElementById(`cama-${numCama}`);
+
+if (btn) {
+
+btn.classList.add('seleccionada');
+
+camaSeleccionada = String(numCama);
+
+const label = document.getElementById('labelCamaSeleccionada');
+
+label.innerText = `Cama #${numCama} elegida`;
+
+label.className = "text-xs font-extrabold text-purple-300";
+
+}
+
+}
+
+
+
+async function confirmarReservaPilates(e) {
+
+e.preventDefault();
+
+
+
+if (!camaSeleccionada) {
+
+alert("Por favor selecciona una cama disponible.");
+
+return;
+
+}
+
+
+
+const payload = {
+
+nombre: document.getElementById('nombrePilates').value.trim(),
+
+telefono: document.getElementById('telPilates').value.trim(),
+
+fecha_nacimiento: document.getElementById('fechaNacimientoPilates').value,
+
+paquete: document.getElementById('paquetePilates').value,
+
+cama: String(camaSeleccionada),
+
+fruta: document.getElementById('fruta').value.trim(),
+
+bebida: document.getElementById('bebida').value.trim(),
+
+personaje: document.getElementById('personaje').value.trim()
+
+};
+
+
+
+try {
+
+const res = await fetch('/api/pilates/reservar', {
+
+method: 'POST',
+
+headers: { 'Content-Type': 'application/json' },
+
+body: JSON.stringify(payload)
+
+});
+
+
+
+const data = await res.json();
+
+if (!res.ok) {
+
+throw new Error(data.detail || "Error al procesar la reserva");
+
+}
+
+
+
+alert("¡Reserva de Pilates registrada exitosamente!");
+
+
+
+const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
+
+`👤 *Nombre:* ${payload.nombre}\n` +
+
+`📞 *Teléfono:* ${payload.telefono}\n` +
+
+`📦 *Paquete/Horario:* ${payload.paquete}\n` +
+
+`🧘‍♀️ *Cama:* #${payload.cama}\n` +
+
+`🍎 *Fruta:* ${payload.fruta || 'N/A'}\n` +
+
+`🥤 *Bebida:* ${payload.bebida || 'N/A'}\n` +
+
+`🎭 *Temática:* ${payload.personaje || 'N/A'}\n\n` +
+
+`Adjunto mi comprobante de pago.`;
+
+
+
+window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+
+
+camaSeleccionada = null;
+
+document.getElementById('formPilates').reset();
+
+alCambiarOpcionPilates();
+
+
+
+} catch (err) {
+
+alert(`Error al reservar Pilates: ${err.message}`);
+
+}
+
+}
+
+</script>
+
 </body>
-</html>
+
+</html> 
+
