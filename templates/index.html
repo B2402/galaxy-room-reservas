@@ -241,7 +241,7 @@
                     </div>
                 </section>
 
-               <!-- 3. ELIGE TU CAMA (PILATES) -->
+                <!-- 3. ELIGE TU CAMA (PILATES) -->
                 <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl">
                     <div class="flex justify-between items-center mb-1">
                         <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Elige tu Cama (5 Lugares)</h2>
@@ -293,7 +293,7 @@
                 </section>
 
                 <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
-                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">4. Personaliza tu Sesión</h2>
+                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Personaliza tu Sesión</h2>
                     
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Fruta preferida:</label>
@@ -337,7 +337,7 @@
             </form>
         </div>
 
-        <!-- SECCIÓN CANCELAR CITA MEDIANTE WHATSAPP -->
+        <!-- SECCIÓN RESTAURADA: CANCELAR CITA MEDIANTE WHATSAPP -->
         <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-8 border border-red-500/30 shadow-2xl">
             <h2 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <span>❌</span> ¿Necesitas Cancelar tu Cita?
@@ -369,7 +369,6 @@
     const NUMERO_ADMIN_WHATSAPP = "523522083263";
     let biciSeleccionada = null;
     let bicisOcupadas = [];
-    let camaSeleccionada = null;
 
     document.addEventListener("DOMContentLoaded", () => {
         if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
@@ -437,41 +436,44 @@
 
             tituloTabla.className = "text-xs font-bold text-purple-400 uppercase tracking-wider mb-3";
             cuerpoTabla.innerHTML = `
+            
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Pilates Reformer Básico (2 x semana)</td>
+                    <td class="py-2 px-1"> Pilates Reformer Básico Clases de pilates 2 x semana</td>
                     <td class="py-2 px-1 text-right font-bold">$800 MXN</td>
                 </tr>
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Pilates Reformer Intermedio (3 x semana)</td>
+                    <td class="py-2 px-1"> Pilates Reformer Internmedio 3 x semana</td>
                     <td class="py-2 px-1 text-right font-bold">$1100 MXN</td>
                 </tr>
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Pilates Reformer Premium (5 x semana)</td>
+                    <td class="py-2 px-1">Pilates Reformer Premium ( Clases de pilates 5 x semana)</td>
                     <td class="py-2 px-1 text-right font-bold">$1600 MXN</td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Clase Individual</td>
+                </tr> 
+                    <tr>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Pilates Reformer Clase Individual</td>
                     <td class="py-2 px-1">1 Sesión</td>
                     <td class="py-2 px-1 text-right font-bold">$120 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
-                    <td class="py-2 px-1">Spinning + Pilates (20 + 8 clases)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
+                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (20 clases de Spinning + 8 de pilates Performer)</td>
                     <td class="py-2 px-1 text-right font-bold">$1300 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
-                    <td class="py-2 px-1">Spinning + Pilates (16 + 8 clases)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
+                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (16 clases de Spinning + 8 de pilates Performer)</td>
                     <td class="py-2 px-1 text-right font-bold">$1200 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
-                    <td class="py-2 px-1">Spinning + Pilates (8 + 8 clases)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
+                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (8 clases de Spinning + 8 de pilates Performer)</td>
                     <td class="py-2 px-1 text-right font-bold">$1000 MXN</td>
-                </tr>
+                </tr> 
+                
+                
             `;
         }
     }
@@ -559,28 +561,8 @@
     function seleccionarBici(numero, elemento) {
         document.querySelectorAll('.bici-btn').forEach(b => b.classList.remove('seleccionada'));
         biciSeleccionada = numero;
-        document.getElementById('biciSeleccionadaTexto').innerText = `Bici #${numero}`;
         elemento.classList.add('seleccionada');
-    }
-
-    function seleccionarCama(numero) {
-        document.querySelectorAll('.cama-btn').forEach(b => {
-            if (!b.classList.contains('ocupada')) {
-                b.classList.remove('seleccionada');
-                b.querySelector('.status-txt').innerText = "Libre";
-                b.querySelector('.status-txt').className = "text-[10px] uppercase font-bold text-slate-400 status-txt";
-            }
-        });
-
-        camaSeleccionada = numero;
-        const btnSeleccionado = document.getElementById(`cama-${numero}`);
-        btnSeleccionado.classList.add('seleccionada');
-        
-        const statusTxt = btnSeleccionado.querySelector('.status-txt');
-        statusTxt.innerText = "Seleccionada";
-        statusTxt.className = "text-[10px] uppercase font-bold text-purple-950 status-txt";
-
-        document.getElementById('camaSeleccionadaTexto').innerText = `Cama #${numero}`;
+        document.getElementById('biciSeleccionadaTexto').innerText = `Bici #${numero}`;
     }
 
     async function confirmarReserva() {
@@ -613,20 +595,29 @@
                 })
             });
 
-            const data = await response.json();
-            if (response.ok) {
-                alert("¡Reserva guardada con éxito! Redirigiendo a WhatsApp...");
-                // WHATSAPP EXCLUSIVO DE SPINNING (Solo con los datos solicitados en su sección)
-                const mensaje = `Hola Galaxy Room ✨, soy *${nombre}*.\nQuiero confirmar mi reserva de *Spinning*:\n📅 Clase: ${textoClaseSeleccionada}\n🚲 Bicicleta: #${biciSeleccionada}\n💳 Modalidad: ${modalidad}\n📱 Teléfono: ${telefono}\n\nAdjunto mi comprobante de pago.`;
-                window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
-            } else {
-                alert("Error: " + (data.error || "No se pudo completar la reserva"));
-                cargarBicisDisponibles();
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "Error al registrar la reserva.");
             }
+
+            alert(result.mensaje);
+            
+            const textoWs = encodeURIComponent(
+                `*NUEVA RESERVA - SPINNING GALAXY ROOM*\n\n` +
+                `👤 *Nombre:* ${nombre}\n` +
+                `📱 *Teléfono:* ${telefono}\n` +
+                `🚲 *Bicicleta:* #${biciSeleccionada}\n` +
+                `📅 *Clase:* ${textoClaseSeleccionada}\n` +
+                `💳 *Modalidad:* ${modalidad}\n\n` +
+                `*Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita en caso de requerirlo, y de no ser asi se me cobrara de todas formas*\n\n` +
+                `Adjunto mi comprobante de pago.`
+            );
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
+
+            location.reload();
         } catch (err) {
-            console.error("Error al enviar reserva:", err);
-            const mensaje = `Hola Galaxy Room ✨, soy *${nombre}*.\nQuiero confirmar mi reserva de *Spinning*:\n📅 Clase: ${textoClaseSeleccionada}\n🚲 Bicicleta: #${biciSeleccionada}\n💳 Modalidad: ${modalidad}\n📱 Teléfono: ${telefono}\n\nAdjunto mi comprobante de pago.`;
-            window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+            alert(err.message);
+            cargarBicisDisponibles();
         }
     }
 
@@ -640,39 +631,45 @@
         const bebida = document.getElementById('bebida').value.trim() || "No especificada";
         const personaje = document.getElementById('personaje').value.trim() || "No especificado";
 
-        if (!camaSeleccionada) {
-            alert("Por favor selecciona una cama de Pilates.");
-            return;
-        }
-
         try {
-            const response = await fetch('/api/reservar-pilates', {
+            const response = await fetch('/api/pilates/reservar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    nombre,
-                    telefono,
+                    nombre: nombre,
+                    telefono: telefono,
                     fecha_nacimiento: fechaNacimiento,
-                    paquete,
-                    cama: String(camaSeleccionada),
-                    fruta,
-                    bebida,
-                    personaje
+                    paquete: paquete,
+                    fruta: fruta,
+                    bebida: bebida,
+                    personaje: personaje
                 })
             });
 
-            const data = await response.json();
-            if (response.ok || response.status === 200) {
-                alert("¡Reserva de Pilates registrada! Redirigiendo a WhatsApp...");
-                const mensaje = `Hola Galaxy Room 🧘‍♀️, soy *${nombre}*.\nQuiero confirmar mi reserva en *Pilates Studio*:\n📦 Paquete: ${paquete}\n🛏️ Cama: #${camaSeleccionada}\n🎂 F. Nacimiento: ${fechaNacimiento}\n🍎 Fruta: ${fruta}\n🥤 Bebida: ${bebida}\n⭐ Temática: ${personaje}\n📱 Teléfono: ${telefono}\n\nAdjunto mi comprobante de pago.`;
-                window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
-            } else {
-                alert("Error al registrar pilates: " + (data.error || "Intenta nuevamente"));
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "Error al registrar la reserva de Pilates.");
             }
+
+            alert(result.mensaje);
+
+            const textoWs = encodeURIComponent(
+                `*NUEVA RESERVA - PILATES STUDIO*\n\n` +
+                `👤 *Nombre:* ${nombre}\n` +
+                `📱 *Teléfono:* ${telefono}\n` +
+                `🎂 *Fecha de Nacimiento:* ${fechaNacimiento}\n` +
+                `📦 *Paquete:* ${paquete}\n` +
+                `🍎 *Fruta Preferida:* ${fruta}\n` +
+                `🥤 *Bebida Hidratante:* ${bebida}\n` +
+                `⭐ *Personaje/Temática:* ${personaje}\n\n` +
+                `*Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita en caso de requerirlo, y de no ser asi se me cobrara de todas formas*\n\n` +
+                `Adjunto mi comprobante de pago.`
+            );
+            window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
+
+            location.reload();
         } catch (err) {
-            console.error("Error en pilates:", err);
-            const mensaje = `Hola Galaxy Room 🧘‍♀️, soy *${nombre}*.\nQuiero confirmar mi reserva en *Pilates Studio*:\n📦 Paquete: ${paquete}\n🛏️ Cama: #${camaSeleccionada}\n🎂 F. Nacimiento: ${fechaNacimiento}\n🍎 Fruta: ${fruta}\n🥤 Bebida: ${bebida}\n⭐ Temática: ${personaje}\n📱 Teléfono: ${telefono}\n\nAdjunto mi comprobante de pago.`;
-            window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+            alert(err.message);
         }
     }
 
@@ -681,13 +678,30 @@
         const tipo = document.getElementById('tipoCancelar').value;
 
         if (!telefono) {
-            alert("Por favor ingresa tu número de WhatsApp registrado para cancelar.");
+            alert("Por favor ingresa tu número de WhatsApp registrado.");
             return;
         }
 
-        if (confirm(`¿Estás seguro de que deseas solicitar la cancelación de tu cita de ${tipo}?`)) {
-            const mensaje = `Hola Galaxy Room ❌, necesito cancelar mi cita registrada con el teléfono *${telefono}* en la sección de *${tipo === 'spinning' ? 'Spinning Galaxy Room' : 'Pilates Studio'}*.`;
-            window.location.href = `https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+        if (!confirm("¿Estás seguro de que deseas solicitar la cancelación de tu cita?")) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/cancelar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telefono: telefono, tipo: tipo })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || "Error al cancelar la cita.");
+            }
+
+            alert(result.mensaje);
+            location.reload();
+        } catch (err) {
+            alert(err.message);
         }
     }
     </script>
