@@ -18,16 +18,20 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # Estructura de datos temporal en memoria
-reservas_db: Dict[str, Dict[str, str]] = {}
+reservas_db: Dict[str, Dict[str, Any]] = {}
 reservas_pilates_db: List[Dict[str, Any]] = []
 
 class ReservaSchema(BaseModel):
+    clase_id: Optional[str] = "1"
     bicicleta: str
     nombre: str
     telefono: str
+    modalidad: Optional[str] = ""
 
 class CancelarReservaSchema(BaseModel):
-    bicicleta: str
+    telefono: str
+    tipo: str  # "spinning" o "pilates"
+    bicicleta: Optional[str] = None
 
 class ReservaPilatesSchema(BaseModel):
     nombre: str
@@ -45,32 +49,68 @@ async def read_index():
 
 # --- ENDPOINTS SPINNING ---
 
+@app.get("/api/reservas/{clase_id}")
+async def obtener_reservas_por_clase(clase_id: str):
+    """Devuelve la lista de bicicletas reservadas para una clase específica."""
+    bici_ocupadas = []
+    for k, v in reservas_db.items():
+        if str(v.get("clase_id")) == str(clase_id) and k.isdigit():
+            bici_ocupadas.append(int(k))
+    return {"bicis_ocupadas": bici_ocupadas}
+
 @app.get("/api/reservas")
 async def obtener_reservas(clase_id: Optional[str] = None, fecha: Optional[str] = None):
-    """Devuelve la lista de bicicletas reservadas."""
     return {"bicis_ocupadas": [int(k) for k in reservas_db.keys() if k.isdigit()]}
 
 @app.post("/api/reservar")
 async def registrar_reserva(reserva: ReservaSchema):
     """Registra una nueva reserva de bicicleta."""
     bici_id = str(reserva.bicicleta).strip()
-    if bici_id in reservas_db:
-        raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada.")
+    clase_id = str(reserva.clase_id).strip()
+    
+    # Validar si ya está ocupada en esa clase
+    for k, v in reservas_db.items():
+        if k == bici_id and str(v.get("clase_id")) == clase_id:
+            raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada para esta clase.")
     
     reservas_db[bici_id] = {
+        "clase_id": clase_id,
         "nombre": reserva.nombre,
-        "telefono": reserva.telefono
+        "telefono": reserva.telefono,
+        "modalidad": reserva.modalidad
     }
     return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
 
 @app.post("/api/cancelar")
 async def cancelar_reserva(data: CancelarReservaSchema):
-    """Cancela una reserva de bicicleta."""
-    bici_id = str(data.bicicleta).strip()
-    if bici_id in reservas_db:
-        del reservas_db[bici_id]
-        return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} liberada exitosamente."}
-    return {"status": "ok", "mensaje": "La bicicleta no estaba registrada en el servidor."}
+    """Cancela una reserva mediante el número de teléfono."""
+    telefono = data.telefono.strip()
+    tipo = data.tipo.lower()
+
+    if tipo == "spinning":
+        encontrados = [k for k, v in reservas_db.items() if str(v.get("telefono")) == telefono]
+        if encontrados:
+            for k in encontrados:
+                del reservas_db[k]
+            return {"status": "ok", "mensaje": "Reserva(s) de Spinning cancelada(s) exitosamente."}
+        raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Spinning con este número de teléfono.")
+    
+    elif tipo == "pilates":
+        global reservas_pilates_db
+        antes = len(reservas_pilates_db)
+        reservas_pilates_db = [r for r in reservas_pilates_db if str(r.get("telefono")) != telefono]
+        if len(reservas_pilates_db) < antes:
+            return {"status": "ok", "mensaje": "Reserva(s) de Pilates cancelada(s) exitosamente."}
+        raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Pilates con este número de teléfono.")
+    
+    raise HTTPException(status_code=400, detail="Tipo de experiencia no válido.")
+
+@app.post("/api/reset-db")
+async def reset_db():
+    """Resetea todas las reservas para pruebas."""
+    reservas_db.clear()
+    reservas_pilates_db.clear()
+    return {"status": "ok", "mensaje": "Base de datos reiniciada."}
 
 # --- ENDPOINTS PILATES ---
 
