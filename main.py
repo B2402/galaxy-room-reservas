@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
+from supabase import create_client, Client
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -17,9 +18,10 @@ app = FastAPI(
 # Servir archivos estáticos
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-# Estructura de datos temporal en memoria
-reservas_db: Dict[str, Dict[str, Any]] = {}
-reservas_pilates_db: List[Dict[str, Any]] = []
+# --- CONFIGURACIÓN DE SUPABASE ---
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pjatimqcgmnsnkmjspqi.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_KqE4UPVn2JYKnAudq6RV2w_GwhJj_vu")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class ReservaSchema(BaseModel):
     clase_id: Optional[str] = "1"
@@ -51,101 +53,160 @@ async def read_index():
 
 @app.get("/api/reservas/{clase_id}")
 async def obtener_reservas_por_clase(clase_id: str):
-    """Devuelve la lista de bicicletas reservadas para una clase específica."""
-    bici_ocupadas = []
-    for k, v in reservas_db.items():
-        if str(v.get("clase_id")) == str(clase_id) and k.isdigit():
-            bici_ocupadas.append(int(k))
-    return {"bicis_ocupadas": bici_ocupadas}
+    """Devuelve la lista de bicicletas reservadas para una clase específica desde Supabase."""
+    try:
+        response = supabase.table("reservas_spinning").select("*").eq("clase_id", clase_id).execute()
+        bici_ocupadas = []
+        for row in response.data:
+            bici_num = row.get("bicicleta")
+            if bici_num and str(bici_num).isdigit():
+                bici_ocupadas.append(int(bici_num))
+        return {"bicis_ocupadas": bici_ocupadas}
+    except Exception as e:
+        print(f"Error al obtener reservas de spinning: {e}")
+        return {"bicis_ocupadas": []}
 
 @app.get("/api/reservas")
 async def obtener_reservas(clase_id: Optional[str] = None, fecha: Optional[str] = None):
-    return {"bicis_ocupadas": [int(k) for k in reservas_db.keys() if k.isdigit()]}
+    try:
+        query = supabase.table("reservas_spinning").select("*")
+        if clase_id:
+            query = query.eq("clase_id", clase_id)
+        response = query.execute()
+        
+        bici_ocupadas = []
+        for row in response.data:
+            bici_num = row.get("bicicleta")
+            if bici_num and str(bici_num).isdigit():
+                bici_ocupadas.append(int(bici_num))
+        return {"bicis_ocupadas": bici_ocupadas}
+    except Exception as e:
+        print(f"Error al obtener todas las reservas: {e}")
+        return {"bicis_ocupadas": []}
 
 @app.post("/api/reservar")
 async def registrar_reserva(reserva: ReservaSchema):
-    """Registra una nueva reserva de bicicleta."""
+    """Registra una nueva reserva de bicicleta en Supabase."""
     bici_id = str(reserva.bicicleta).strip()
     clase_id = str(reserva.clase_id).strip()
     
-    # Validar si ya está ocupada en esa clase
-    for k, v in reservas_db.items():
-        if k == bici_id and str(v.get("clase_id")) == clase_id:
+    try:
+        # Validar si ya está ocupada en esa clase en Supabase
+        existing = supabase.table("reservas_spinning")\
+            .select("*")\
+            .eq("clase_id", clase_id)\
+            .eq("bicicleta", bici_id)\
+            .execute()
+            
+        if existing.data and len(existing.data) > 0:
             raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada para esta clase.")
-    
-    reservas_db[bici_id] = {
-        "clase_id": clase_id,
-        "nombre": reserva.nombre,
-        "telefono": reserva.telefono,
-        "modalidad": reserva.modalidad
-    }
-    return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
+        
+        # Insertar registro
+        data_to_insert = {
+            "clase_id": clase_id,
+            "bicicleta": bici_id,
+            "nombre": reserva.nombre,
+            "telefono": reserva.telefono,
+            "modalidad": reserva.modalidad
+        }
+        
+        supabase.table("reservas_spinning").insert(data_to_insert).execute()
+        return {"status": "ok", "mensaje": f"Bicicleta #{bici_id} reservada exitosamente."}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al guardar la reserva en la base de datos: {str(e)}")
 
 @app.post("/api/cancelar")
 async def cancelar_reserva(data: CancelarReservaSchema):
-    """Cancela una reserva mediante el número de teléfono."""
+    """Cancela una reserva mediante el número de teléfono en Supabase."""
     telefono = data.telefono.strip()
     tipo = data.tipo.lower()
 
-    if tipo == "spinning":
-        encontrados = [k for k, v in reservas_db.items() if str(v.get("telefono")) == telefono]
-        if encontrados:
-            for k in encontrados:
-                del reservas_db[k]
-            return {"status": "ok", "mensaje": "Reserva(s) de Spinning cancelada(s) exitosamente."}
-        raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Spinning con este número de teléfono.")
-    
-    elif tipo == "pilates":
-        global reservas_pilates_db
-        antes = len(reservas_pilates_db)
-        reservas_pilates_db = [r for r in reservas_pilates_db if str(r.get("telefono")) != telefono]
-        if len(reservas_pilates_db) < antes:
-            return {"status": "ok", "mensaje": "Reserva(s) de Pilates cancelada(s) exitosamente."}
-        raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Pilates con este número de teléfono.")
-    
-    raise HTTPException(status_code=400, detail="Tipo de experiencia no válido.")
+    try:
+        if tipo == "spinning":
+            response = supabase.table("reservas_spinning").delete().eq("telefono", telefono).execute()
+            if response.data and len(response.data) > 0:
+                return {"status": "ok", "mensaje": "Reserva(s) de Spinning cancelada(s) exitosamente."}
+            raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Spinning con este número de teléfono.")
+        
+        elif tipo == "pilates":
+            response = supabase.table("reservas_pilates").delete().eq("telefono", telefono).execute()
+            if response.data and len(response.data) > 0:
+                return {"status": "ok", "mensaje": "Reserva(s) de Pilates cancelada(s) exitosamente."}
+            raise HTTPException(status_code=404, detail="No se encontró ninguna reserva de Pilates con este número de teléfono.")
+        
+        raise HTTPException(status_code=400, detail="Tipo de experiencia no válido.")
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al cancelar la reserva: {str(e)}")
 
 @app.post("/api/reset-db")
 async def reset_db():
-    """Resetea todas las reservas para pruebas."""
-    reservas_db.clear()
-    reservas_pilates_db.clear()
-    return {"status": "ok", "mensaje": "Base de datos reiniciada."}
+    """Limpia las tablas de Supabase para pruebas."""
+    try:
+        # Nota: Esto requiere que las tablas permitan el borrado masivo o se limpien por filas
+        supabase.table("reservas_spinning").delete().neq("id", 0).execute()
+        supabase.table("reservas_pilates").delete().neq("id", 0).execute()
+        return {"status": "ok", "mensaje": "Base de datos en Supabase reiniciada."}
+    except Exception as e:
+        # Método alternativo por si no usan columna id numérica
+        try:
+            supabase.table("reservas_spinning").delete().gte("bicicleta", "0").execute()
+            supabase.table("reservas_pilates").delete().gte("telefono", "0").execute()
+            return {"status": "ok", "mensaje": "Base de datos en Supabase reiniciada."}
+        except Exception as err:
+            raise HTTPException(status_code=500, detail=f"No se pudo vaciar la base de datos: {str(err)}")
 
 # --- ENDPOINTS PILATES ---
 
 @app.get("/api/pilates/reservas")
 @app.get("/api/reservas-pilates")
 async def obtener_reservas_pilates(paquete: Optional[str] = None):
-    """Devuelve las camas ocupadas para Pilates."""
-    if paquete:
-        camas = [
-            int(r.get("cama")) for r in reservas_pilates_db 
-            if str(r.get("paquete")) == str(paquete) and str(r.get("cama")).isdigit()
-        ]
+    """Devuelve las camas ocupadas para Pilates desde Supabase."""
+    try:
+        query = supabase.table("reservas_pilates").select("*")
+        if paquete:
+            query = query.eq("paquete", paquete)
+        response = query.execute()
+        
+        camas = []
+        for row in response.data:
+            cama_val = row.get("cama")
+            if cama_val and str(cama_val).isdigit():
+                camas.append(int(cama_val))
+                
         return {"camas_ocupadas": camas, "ocupadas": camas}
-    
-    camas = [int(r.get("cama")) for r in reservas_pilates_db if str(r.get("cama")).isdigit()]
-    return {"camas_ocupadas": camas, "ocupadas": camas}
+    except Exception as e:
+        print(f"Error al obtener reservas de pilates: {e}")
+        return {"camas_ocupadas": [], "ocupadas": []}
 
 @app.post("/api/pilates/reservar")
 @app.post("/api/reservas-pilates")
 async def registrar_reserva_pilates(reserva: ReservaPilatesSchema):
-    """Registra la reserva de Pilates validando disponibilidad."""
+    """Registra la reserva de Pilates validando disponibilidad en Supabase."""
     cama_id = str(reserva.cama).strip() if reserva.cama else ""
     paquete_id = str(reserva.paquete).strip() if reserva.paquete else ""
 
-    if cama_id and paquete_id:
-        cama_ocupada = any(
-            str(r.get("cama")) == cama_id and str(r.get("paquete")) == paquete_id 
-            for r in reservas_pilates_db
-        )
-        if cama_ocupada:
-            raise HTTPException(status_code=400, detail=f"La cama #{cama_id} ya se encuentra reservada para este paquete/horario.")
+    try:
+        if cama_id and paquete_id:
+            existing = supabase.table("reservas_pilates")\
+                .select("*")\
+                .eq("paquete", paquete_id)\
+                .eq("cama", cama_id)\
+                .execute()
+                
+            if existing.data and len(existing.data) > 0:
+                raise HTTPException(status_code=400, detail=f"La cama #{cama_id} ya se encuentra reservada para este paquete/horario.")
 
-    nueva_reserva = reserva.dict()
-    reservas_pilates_db.append(nueva_reserva)
-    return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
+        nueva_reserva = reserva.dict()
+        supabase.table("reservas_pilates").insert(nueva_reserva).execute()
+        return {"status": "ok", "mensaje": "Reserva de Pilates registrada exitosamente."}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al guardar la reserva de pilates: {str(e)}")
 
 # --- ENDPOINTS AUXILIARES ---
 
