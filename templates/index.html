@@ -35,18 +35,24 @@
             text-shadow: 0 0 12px #C084FC, 0 0 24px #A855F7, 0 0 36px #E879F9; 
         }
 
-        .bici-btn {
+        .bici-btn, .cama-card {
             background: rgba(30, 41, 59, 0.9);
             border: 1px solid #334155;
             transition: all 0.2s ease;
         }
-        .bici-btn.seleccionada {
+        .bici-btn.seleccionada, .cama-card.seleccionada {
             background: #00E5FF !important;
             color: #000000 !important;
             border-color: #00E5FF !important;
             box-shadow: 0 0 15px #00E5FF;
         }
-        .bici-btn.ocupada {
+        body.bg-pilates-mode .cama-card.seleccionada {
+            background: #C084FC !important;
+            color: #000000 !important;
+            border-color: #C084FC !important;
+            box-shadow: 0 0 15px #C084FC;
+        }
+        .bici-btn.ocupada, .cama-card.ocupada {
             background: #ef4444 !important;
             color: #ffffff !important;
             border-color: #f87171 !important;
@@ -90,7 +96,7 @@
                           stroke="#00E5FF" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"
                           class="drop-shadow-[0_0_6px_#00E5FF]"/>
                 </svg>
-                <img id="logoPilates" src="/static/pilates-logo.jpeg" alt="Pilates Logo" class="w-full h-full object-cover rounded-full hidden">
+                <img id="logoPilates" src="/static/pilates-logo.jpeg" alt="Pilates Logo" class="w-full h-full object-cover rounded-full hidden" onerror="this.style.display='none'">
             </div>
             
             <h1 id="headerTitulo" class="text-3xl font-black text-cyan-400 glow-title uppercase tracking-wider">Spinning Galaxy</h1>
@@ -194,18 +200,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
-                    <span class="text-base">📸</span>
-                    <p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
-                </div>
             </section>
-
-            <div class="bg-amber-950/60 border border-amber-500/50 p-3 rounded-xl mb-5 text-amber-200 text-xs flex items-start space-x-2">
-                <span class="text-base">⚠️</span>
-                <p>
-                    <strong>Aviso importante:</strong> En caso de requerir cancelación, debes realizarla con al menos <strong>1 hora de anticipación</strong> previa a la hora de tu cita. De lo contrario, la sesión será cobrada como si hubieras asistido.
-                </p>
-            </div>
 
             <button type="button" onclick="confirmarReserva()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-cyan-500/30 transition-all uppercase tracking-wider mb-6">
                 Confirmar Reserva
@@ -229,85 +224,55 @@
                     <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">2. Paquete y Horario</h2>
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Selecciona tu Paquete u Horario:</label>
-                        <select id="paquetePilates" required class="w-full p-3 rounded-lg input-dark text-sm text-white">
-                            <option value="Clase Individual Pilates">💳 Clase Individual Pilates </option>
-                            <option value="Paquete Mensual Pilates">🔥 Pilates Reformer Básico</option>
-                            <option value="Paquete Personalizado / Consulta">⭐ Pilates Reformer Intermedio</option>
-                             <option value="Paquete Personalizado / Consulta">⭐ Pilates Reformer Premium</option>
-                             <option value="Paquete Personalizado / Consulta">⭐ Combo Spinning + Pilates Reformer $1300 MX</option>
-                             <option value="Paquete Personalizado / Consulta">⭐ Combo Spinning + Pilates Reformer $1200 MX </option>
-                            <option value="Paquete Personalizado / Consulta">⭐ Combo Spinning + Pilates Reformer $1000 MX </option>
+                        <select id="paquetePilates" onchange="renderizarCamasPilates()" required class="w-full p-3 rounded-lg input-dark text-sm text-white">
+                            <option value="Clase Individual Pilates">💳 Clase Individual Pilates - $120 MXN</option>
+                            <option value="Pilates Reformer Básico">🔥 Pilates Reformer Básico (2x sem) - $800 MXN</option>
+                            <option value="Pilates Reformer Intermedio">⭐ Pilates Reformer Intermedio (3x sem) - $1100 MXN</option>
+                            <option value="Pilates Reformer Premium">⭐ Pilates Reformer Premium (5x sem) - $1600 MXN</option>
+                            <option value="Combo Spinning + Pilates 20+8">⭐ Combo Spinning + Pilates Reformer (20+8) - $1300 MXN</option>
+                            <option value="Combo Spinning + Pilates 16+8">⭐ Combo Spinning + Pilates Reformer (16+8) - $1200 MXN</option>
+                            <option value="Combo Spinning + Pilates 8+8">⭐ Combo Spinning + Pilates Reformer (8+8) - $1000 MXN</option>
                         </select>
                     </div>
                 </section>
-            </section>
+
                 <!-- SECCIÓN MAPA DE CAMAS DE PILATES (5 CAMAS) -->
+                <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-purple-500/30 shadow-2xl">
+                    <div class="flex justify-between items-center mb-1">
+                        <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Elige tu Cama (5 lugares)</h2>
+                        <span id="labelCamaSeleccionada" class="text-xs font-extrabold text-purple-300">Ninguna seleccionada</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-3">Distribución de sala: 2 a la izquierda y 3 a la derecha.</p>
 
-<section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-purple-500/30 shadow-2xl">
+                    <div class="w-full py-1.5 bg-purple-950/80 text-purple-300 border border-purple-500/40 text-center text-[11px] font-bold rounded-lg mb-4 uppercase tracking-widest shadow-inner">
+                        🧘 Instructor / Frente
+                    </div>
 
-<div class="flex justify-between items-center mb-1">
-
-<h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Elige tu Cama (5 lugares)</h2>
-
-<span id="labelCamaSeleccionada" class="text-xs font-extrabold text-purple-300">Ninguna seleccionada</span>
-
-</div>
-
-<p class="text-[11px] text-slate-400 mb-3">Distribución de sala: 2 a la izquierda y 3 a la derecha.</p>
-
-
-
-<div class="w-full py-1.5 bg-purple-950/80 text-purple-300 border border-purple-500/40 text-center text-[11px] font-bold rounded-lg mb-4 uppercase tracking-widest shadow-inner">
-
-🧘 Instructor / Frente
-
-</div>
-
-
-
-<div class="grid grid-cols-2 gap-4">
-
-<div class="space-y-2">
-
-<p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Izquierdo (2)</p>
-
-<div id="cama-1-container"></div>
-
-<div id="cama-2-container"></div>
-
-</div>
-
-
-
-<div class="space-y-2">
-
-<p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Derecho (3)</p>
-
-<div id="cama-3-container"></div>
-
-<div id="cama-4-container"></div>
-
-<div id="cama-5-container"></div>
-
-</div>
-
-</div>
-
-</section>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Izquierdo (2)</p>
+                            <div id="cama-1-container"></div>
+                            <div id="cama-2-container"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-[10px] text-purple-300 font-bold uppercase text-center tracking-wider border-b border-purple-900/50 pb-1">Lado Derecho (3)</p>
+                            <div id="cama-3-container"></div>
+                            <div id="cama-4-container"></div>
+                            <div id="cama-5-container"></div>
+                        </div>
+                    </div>
+                </section>
 
                 <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl border border-slate-800 shadow-2xl space-y-4">
-                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">3. Personaliza tu Sesión</h2>
-                    
+                    <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">4. Personaliza tu Sesión</h2>
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Fruta preferida:</label>
                         <input type="text" id="fruta" placeholder="Escribe la fruta de tu preferencia" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
                     </div>
-
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Bebida hidratante:</label>
                         <input type="text" id="bebida" placeholder="Escribe tu bebida hidratante preferida" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
                     </div>
-
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Personaje / Temática preferida:</label>
                         <input type="text" id="personaje" placeholder="Escribe tu personaje o temática favorita" class="w-full p-3 rounded-lg input-dark text-sm placeholder-slate-400">
@@ -323,14 +288,10 @@
                         <p><strong class="text-purple-300">Beneficiario:</strong> Mayra Paola Ramirez Ibarra</p>
                         <div class="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-700 mt-1">
                             <span class="font-mono text-purple-300 font-bold text-xs select-all">722969020075560673</span>
-                            <button type="button" onclick="copiarClabe('722969020075560673')" class="bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
+                            <button type="button" onclick="copiarClabe('722969020075560673')" class="bg-purple-500/25 hover:bg-purple-500/40 text-purple-300 text-[10px] px-2 py-1 rounded font-bold uppercase transition-all">
                                 Copiar
                             </button>
                         </div>
-                    </div>
-                    <div class="bg-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg mt-3 text-amber-200 text-[11px] flex items-center gap-2">
-                        <span class="text-base">📸</span>
-                        <p><strong>Aviso importante:</strong> Recuerda enviar tu <strong>comprobante de pago</strong> por WhatsApp inmediatamente después de realizar la reserva.</p>
                     </div>
                 </section>
 
@@ -340,7 +301,7 @@
             </form>
         </div>
 
-        <!-- SECCIÓN RESTAURADA: CANCELAR CITA MEDIANTE WHATSAPP -->
+        <!-- SECCIÓN: CANCELAR CITA MEDIANTE TELÉFONO -->
         <section class="bg-slate-900/85 backdrop-blur-md p-4 rounded-xl mb-8 border border-red-500/30 shadow-2xl">
             <h2 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <span>❌</span> ¿Necesitas Cancelar tu Cita?
@@ -363,7 +324,7 @@
     </div>
 
     <!-- BOTÓN RESET PRUEBAS -->
-    <button id="btnResetAdmin" type="button" onclick="localStorage.clear(); location.reload();" 
+    <button id="btnResetAdmin" type="button" onclick="resetearPruebas()" 
             class="hidden fixed bottom-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 z-50 uppercase tracking-wider border border-red-400">
         🧹 Resetear Pruebas
     </button>
@@ -372,17 +333,32 @@
     const NUMERO_ADMIN_WHATSAPP = "523522083263";
     let biciSeleccionada = null;
     let bicisOcupadas = [];
+    let camaSeleccionada = null;
 
     document.addEventListener("DOMContentLoaded", () => {
         if (window.location.search.includes('admin=1') || window.location.search.includes('test=1')) {
             document.getElementById('btnResetAdmin').classList.remove('hidden');
         }
         cargarClases();
+        renderizarCamasPilates();
     });
 
     function copiarClabe(clabe) {
         navigator.clipboard.writeText(clabe);
         alert("¡CLABE copiada al portapapeles!");
+    }
+
+    async function resetearPruebas() {
+        if (!confirm("¿Deseas reiniciar todas las reservas de pruebas?")) return;
+        try {
+            await fetch('/api/reset-db', { method: 'POST' });
+            localStorage.clear();
+            alert("Sistema reiniciado con éxito.");
+            location.reload();
+        } catch (e) {
+            localStorage.clear();
+            location.reload();
+        }
     }
 
     function cambiarSeccion(valor) {
@@ -439,45 +415,43 @@
 
             tituloTabla.className = "text-xs font-bold text-purple-400 uppercase tracking-wider mb-3";
             cuerpoTabla.innerHTML = `
-            
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1"> Pilates Reformer Básico Clases de pilates 2 x semana</td>
+                    <td class="py-2 px-1">Pilates Reformer Básico (2 x semana)</td>
                     <td class="py-2 px-1 text-right font-bold">$800 MXN</td>
                 </tr>
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1"> Pilates Reformer Internmedio 3 x semana</td>
+                    <td class="py-2 px-1">Pilates Reformer Intermedio (3 x semana)</td>
                     <td class="py-2 px-1 text-right font-bold">$1100 MXN</td>
                 </tr>
                 <tr>
                     <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Pilates Reformer Premium ( Clases de pilates 5 x semana)</td>
+                    <td class="py-2 px-1">Pilates Reformer Premium (5 x semana)</td>
                     <td class="py-2 px-1 text-right font-bold">$1600 MXN</td>
                 </tr> 
-                    <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Pilates Reformer Clase Individual</td>
-                    <td class="py-2 px-1">1 Sesión</td>
+                <tr>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Clase Individual</td>
+                    <td class="py-2 px-1">1 Sesión Reformer</td>
                     <td class="py-2 px-1 text-right font-bold">$120 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (20 clases de Spinning + 8 de pilates Performer)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
+                    <td class="py-2 px-1">Spinning + Pilates (20 + 8 clases)</td>
                     <td class="py-2 px-1 text-right font-bold">$1300 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (16 clases de Spinning + 8 de pilates Performer)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
+                    <td class="py-2 px-1">Spinning + Pilates (16 + 8 clases)</td>
                     <td class="py-2 px-1 text-right font-bold">$1200 MXN</td>
                 </tr>
                 <tr>
-                    <td class="py-2 px-1 font-semibold text-purple-300">Mensualidad</td>
-                    <td class="py-2 px-1">Combo Spinning + Pilates Reformer (8 clases de Spinning + 8 de pilates Performer)</td>
+                    <td class="py-2 px-1 font-semibold text-purple-300">Combo</td>
+                    <td class="py-2 px-1">Spinning + Pilates (8 + 8 clases)</td>
                     <td class="py-2 px-1 text-right font-bold">$1000 MXN</td>
-                </tr> 
-                
-                
+                </tr>
             `;
+            renderizarCamasPilates();
         }
     }
 
@@ -616,7 +590,6 @@
                 `Adjunto mi comprobante de pago.`
             );
             window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
-
             location.reload();
         } catch (err) {
             alert(err.message);
@@ -624,204 +597,114 @@
         }
     }
 
-    function alCambiarOpcionPilates() {
-
-renderizarCamasPilates();
-
-}
-
-
-
-async function renderizarCamasPilates() {
-
-const paquete = document.getElementById('paquetePilates').value;
-
-
-let ocupadas = [];
-
-try {
-
-const resApi = await fetch(`/api/pilates/reservas?paquete=${encodeURIComponent(paquete)}`);
-
-if (resApi.ok) {
-
-const dataApi = await resApi.json();
-
-ocupadas = dataApi.camas_ocupadas || dataApi.ocupadas || [];
-
-}
-
-} catch (e) {
-
-console.error("Error al consultar camas ocupadas:", e);
-
-}
-
-
-
-camaSeleccionada = null;
-
-document.getElementById('labelCamaSeleccionada').innerText = "Ninguna seleccionada";
-
-document.getElementById('labelCamaSeleccionada').className = "text-xs font-bold text-purple-300";
-
-
-
-for (let i = 1; i <= 5; i++) {
-
-const cont = document.getElementById(`cama-${i}-container`);
-
-if (!cont) continue;
-
-
-
-const estaOcupada = ocupadas.includes(i) || ocupadas.includes(String(i));
-
-if (estaOcupada) {
-
-cont.innerHTML = `
-
-<button type="button" disabled class="cama-card ocupada w-full py-2.5 rounded-lg flex items-center justify-between px-3">
-
-<span class="text-xs font-bold text-red-200">🧘‍♀️ Cama #${i}</span>
-
-<span class="text-[10px] uppercase font-bold text-red-300 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/40">Ocupada</span>
-
-</button>`;
-
-} else {
-
-cont.innerHTML = `
-
-<button type="button" onclick="seleccionarCama(${i})" id="cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3">
-
-<span class="text-xs font-bold text-slate-200">🧘‍♀️ Cama #${i}</span>
-
-<span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">Disponible</span>
-
-</button>`;
-
-}
-
-}
-
-}
-
-
-
-function seleccionarCama(numCama) {
-
-document.querySelectorAll('.cama-card:not(.ocupada)').forEach(el => el.classList.remove('seleccionada'));
-
-const btn = document.getElementById(`cama-${numCama}`);
-
-if (btn) {
-
-btn.classList.add('seleccionada');
-
-camaSeleccionada = String(numCama);
-
-const label = document.getElementById('labelCamaSeleccionada');
-
-label.innerText = `Cama #${numCama} elegida`;
-
-label.className = "text-xs font-extrabold text-purple-300";
-
-}
-
-}
-
-
-
-async function confirmarReservaPilates(e) {
-
-e.preventDefault();
-
-
-
-if (!camaSeleccionada) {
-
-alert("Por favor selecciona una cama disponible.");
-
-return;
-
-}
-
-
-
-const payload = {
-
-nombre: document.getElementById('nombrePilates').value.trim(),
-
-telefono: document.getElementById('telPilates').value.trim(),
-
-fecha_nacimiento: document.getElementById('fechaNacimientoPilates').value,
-
-paquete: document.getElementById('paquetePilates').value,
-
-cama: String(camaSeleccionada),
-
-fruta: document.getElementById('fruta').value.trim(),
-
-bebida: document.getElementById('bebida').value.trim(),
-
-personaje: document.getElementById('personaje').value.trim()
-
-};
-
-
-
-try {
-
-const res = await fetch('/api/pilates/reservar', {
-
-method: 'POST',
-
-headers: { 'Content-Type': 'application/json' },
-
-body: JSON.stringify(payload)
-
-});
-
-
-
-const data = await res.json();
-
-if (!res.ok) {
-
-throw new Error(data.detail || "Error al procesar la reserva");
-
-}
-
-
-
-alert("¡Reserva de Pilates registrada exitosamente!");
-
-
-
-const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
-
-`👤 *Nombre:* ${payload.nombre}\n` +
-
-`📞 *Teléfono:* ${payload.telefono}\n` +
-
-`📦 *Paquete/Horario:* ${payload.paquete}\n` +
-
-`🧘‍♀️ *Cama:* #${payload.cama}\n` +
-
-`🍎 *Fruta:* ${payload.fruta || 'N/A'}\n` +
-
-`🥤 *Bebida:* ${payload.bebida || 'N/A'}\n` +
-
-`🎭 *Temática:* ${payload.personaje || 'N/A'}\n\n` +
-
-`Adjunto mi comprobante de pago.`;
+    async function renderizarCamasPilates() {
+        const paqueteSelect = document.getElementById('paquetePilates');
+        if (!paqueteSelect) return;
+        const paquete = paqueteSelect.value;
+        let ocupadas = [];
+
+        try {
+            const resApi = await fetch(`/api/pilates/reservas?paquete=${encodeURIComponent(paquete)}`);
+            if (resApi.ok) {
+                const dataApi = await resApi.json();
+                ocupadas = dataApi.camas_ocupadas || dataApi.ocupadas || [];
+            }
+        } catch (e) {
+            console.error("Error al consultar camas ocupadas:", e);
+        }
+
+        camaSeleccionada = null;
+        const labelCama = document.getElementById('labelCamaSeleccionada');
+        if (labelCama) {
+            labelCama.innerText = "Ninguna seleccionada";
+            labelCama.className = "text-xs font-bold text-purple-300";
+        }
+
+        for (let i = 1; i <= 5; i++) {
+            const cont = document.getElementById(`cama-${i}-container`);
+            if (!cont) continue;
+
+            const estaOcupada = ocupadas.includes(i) || ocupadas.includes(String(i));
+            if (estaOcupada) {
+                cont.innerHTML = `
+                <button type="button" disabled class="cama-card ocupada w-full py-2.5 rounded-lg flex items-center justify-between px-3">
+                    <span class="text-xs font-bold text-red-200">🧘‍♀️ Cama #${i}</span>
+                    <span class="text-[10px] uppercase font-bold text-red-300 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/40">Ocupada</span>
+                </button>`;
+            } else {
+                cont.innerHTML = `
+                <button type="button" onclick="seleccionarCama(${i})" id="btn-cama-${i}" class="cama-card w-full py-2.5 rounded-lg flex items-center justify-between px-3">
+                    <span class="text-xs font-bold text-slate-200">🧘‍♀️ Cama #${i}</span>
+                    <span class="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">Disponible</span>
+                </button>`;
+            }
+        }
+    }
+
+    function seleccionarCama(numCama) {
+        document.querySelectorAll('.cama-card:not(.ocupada)').forEach(el => el.classList.remove('seleccionada'));
+        const btn = document.getElementById(`btn-cama-${numCama}`);
+        if (btn) {
+            btn.classList.add('seleccionada');
+            camaSeleccionada = String(numCama);
+            const label = document.getElementById('labelCamaSeleccionada');
+            if (label) {
+                label.innerText = `Cama #${numCama} elegida`;
+                label.className = "text-xs font-extrabold text-purple-300";
+            }
+        }
+    }
+
+    async function confirmarReservaPilates(e) {
+        e.preventDefault();
+
+        if (!camaSeleccionada) {
+            alert("Por favor selecciona una cama disponible.");
+            return;
+        }
+
+        const payload = {
+            nombre: document.getElementById('nombrePilates').value.trim(),
+            telefono: document.getElementById('telPilates').value.trim(),
+            fecha_nacimiento: document.getElementById('fechaNacimientoPilates').value,
+            paquete: document.getElementById('paquetePilates').value,
+            cama: String(camaSeleccionada),
+            fruta: document.getElementById('fruta').value.trim(),
+            bebida: document.getElementById('bebida').value.trim(),
+            personaje: document.getElementById('personaje').value.trim()
+        };
+
+        try {
+            const res = await fetch('/api/pilates/reservar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Error al procesar la reserva");
+            }
+
+            alert("¡Reserva de Pilates registrada exitosamente!");
+
+            const textoWs = encodeURIComponent(
+                `*NUEVA RESERVA - PILATES STUDIO*\n\n` +
+                `👤 *Nombre:* ${payload.nombre}\n` +
+                `📞 *Teléfono:* ${payload.telefono}\n` +
+                `📦 *Paquete/Horario:* ${payload.paquete}\n` +
+                `🧘‍♀️ *Cama:* #${payload.cama}\n` +
+                `🍎 *Fruta:* ${payload.fruta || 'N/A'}\n` +
+                `🥤 *Bebida:* ${payload.bebida || 'N/A'}\n` +
+                `🎭 *Temática:* ${payload.personaje || 'N/A'}\n\n` +
+                `*Estoy consciente de que cuento con 1 hora de anticipación previa para cancelar mi reservación antes de mi cita.*\n\n` +
+                `Adjunto mi comprobante de pago.`
             );
             window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
-
             location.reload();
         } catch (err) {
             alert(err.message);
+            renderizarCamasPilates();
         }
     }
 
@@ -859,7 +742,6 @@ const mensaje = `Hola! Realicé mi reserva para Pilates Studio:\n\n` +
                 `Solicito la cancelación de mi cita dentro del tiempo establecido.`
             );
             window.open(`https://wa.me/${NUMERO_ADMIN_WHATSAPP}?text=${textoWs}`, '_blank');
-
             location.reload();
         } catch (err) {
             alert(err.message);
