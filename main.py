@@ -231,17 +231,18 @@ async def obtener_clases():
         {"id": 1, "dia": "Lunes", "hora": "07:00 AM", "modalidad": "FLOW", "coach": "Coquis"},
         {"id": 2, "dia": "Lunes", "hora": "05:15 PM", "modalidad": "Principiantes"},
         {"id": 3, "dia": "Lunes", "hora": "06:15 PM", "modalidad": "FLOW", "coach": "Mayra"},
-        {"id": 4, "dia": "Lunes", "hora": "07:15 PM", "modalidad": "FLOW", "coach": "Tere Vega"},
-        {"id": 5, "dia": "Martes", "hora": "07:00 AM", "modalidad": "POWER", "coach": "Coquis"},
+        {"id": 4, "dia": "Lunes", "hora": "07:15 PM", "modalidad": "FLOW", "coach": "Mario"},
+        {"id": 5, "dia": "Martes", "hora": "07:00 AM", "modalidad": "Montaña", "coach": "Coquis"},
         {"id": 6, "dia": "Martes", "hora": "05:15 PM", "modalidad": "Principiantes"},
-        {"id": 7, "dia": "Martes", "hora": "06:15 PM", "modalidad": "POWER", "coach": "Coquis"},
-        {"id": 8, "dia": "Martes", "hora": "07:15 PM", "modalidad": "POWER", "coach": "Mayra"},
-        {"id": 9, "dia": "Miércoles", "hora": "06:15 PM", "modalidad": "DARK ROOM", "coach": "Mayra"},
-        {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "MONTAÑA", "coach": "Mario"},
-        {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "MONTAÑA", "coach": "Coquis"},
-        {"id": 12, "dia": "Jueves", "hora": "05:15 PM", "modalidad": "Montaña", "coach": "Principiantes"},
-        {"id": 13, "dia": "Viernes", "hora": "06:15 PM", "modalidad": "SPEED", "coach": "Mayra"},
-        {"id": 14, "dia": "Viernes", "hora": "07:15 PM", "modalidad": "TEMATICA", "coach": "Mayra"}
+        {"id": 7, "dia": "Martes", "hora": "06:15 PM", "modalidad": "Montaña", "coach": "Tere Vega"},
+        {"id": 8, "dia": "Martes", "hora": "07:15 PM", "modalidad": "Montaña", "coach": "Mayra"},
+        {"id": 9, "dia": "Miércoles", "hora": "06:15 PM", "modalidad": "Gruperas", "coach": "Mayra"},
+        {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "Gruperas", "coach": "Omar Loeza"},
+        {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Just Ride", "coach": "Coquis"},
+        {"id": 12, "dia": "Jueves", "hora": "05:15 PM", "modalidad": "Principiantes"},
+        {"id": 13, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Just Ride", "coach": "Coquis"},
+        {"id": 14, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Just Ride", "coach": "Mayra"},
+        {"id": 15, "dia": "Viernes", "hora": "06:15 PM", "modalidad": "2'000", "coach": "Mayra"}
     ]
 
 if __name__ == "__main__":
