@@ -2,83 +2,115 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Galaxy Room</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans p-6">
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
-            <h1 class="text-3xl font-bold text-pink-500">Panel de Control - Galaxy Room</h1>
-            <a href="/" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition">Ver Página Principal</a>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Encabezado -->
+        <header class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-cyan-400">🌌 Panel de Administración</h1>
+                <p class="text-gray-400 text-sm mt-1">Gestión y control de reservas en tiempo real</p>
+            </div>
+            <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-lg text-sm transition">
+                ← Volver al sitio
+            </a>
         </header>
 
-        <!-- Sección Spinning -->
+        <!-- SECCIÓN: RESERVAS DE SPINNING -->
         <section class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4 text-cyan-400">🚴‍♀️ Reservas de Spinning</h2>
-            <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-700 text-gray-300 text-sm uppercase">
-                            <th class="p-3">Bicicleta</th>
-                            <th class="p-3">Nombre</th>
-                            <th class="p-3">Teléfono</th>
-                            <th class="p-3">Modalidad</th>
-                            <th class="p-3 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    divide-y divide-gray-700">
-                        {% for r in spinning %}
-                        <tr class="hover:bg-gray-750 transition">
-                            <td class="p-3 font-bold text-cyan-300">Bici {{ r.bicicleta }}</td>
-                            <td class="p-3">{{ r.nombre }}</td>
-                            <td class="p-3">{{ r.telefono }}</td>
-                            <td class="p-3 text-gray-400">{{ r.modalidad or 'N/A' }}</td>
-                            <td class="p-3 text-center">
-                                <form action="/admin/eliminar/spinning/{{ r.id }}" method="post">
-                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition">Liberar</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="5" class="p-4 text-center text-gray-400">No hay reservas de spinning activas.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <h2 class="text-2xl font-semibold mb-4 text-cyan-300">🚴‍♀️ Reservas de Spinning</h2>
+            <div class="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-700 text-gray-400 bg-gray-800/80 text-sm">
+                                <th class="py-3 px-4">Bicicleta</th>
+                                <th class="py-3 px-4">Nombre</th>
+                                <th class="py-3 px-4">Teléfono</th>
+                                <th class="py-3 px-4">Modalidad</th>
+                                <th class="py-3 px-4">Clase ID</th>
+                                <th class="py-3 px-4">Fecha de Registro</th>
+                                <th class="py-3 px-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800 text-sm">
+                            {% for reserva in spinning %}
+                            <tr class="hover:bg-gray-800/40 transition">
+                                <td class="py-3 px-4 text-cyan-400 font-semibold">Bici {{ reserva.bicicleta }}</td>
+                                <td class="py-3 px-4">{{ reserva.nombre }}</td>
+                                <td class="py-3 px-4">{{ reserva.telefono }}</td>
+                                <td class="py-3 px-4">{{ reserva.modalidad }}</td>
+                                <td class="py-3 px-4">{{ reserva.clase_id }}</td>
+                                <td class="py-3 px-4 text-gray-400">{{ reserva.created_at }}</td>
+                                <td class="py-3 px-4 text-center">
+                                    <form action="/admin/eliminar/spinning/{{ reserva.id }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium transition shadow">
+                                            Liberar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="py-6 text-center text-gray-500">No hay reservas registradas en Spinning.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
-        <!-- Sección Pilates -->
-        <section>
-            <h2 class="text-2xl font-semibold mb-4 text-pink-400">🧘‍♀️ Reservas de Pilates</h2>
-            <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-700 text-gray-300 text-sm uppercase">
-                            <th class="p-3">ID / Cama</th>
-                            <th class="p-3">Nombre</th>
-                            <th class="p-3">Paquete</th>
-                            <th class="p-3 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-700">
-                        {% for r in pilates %}
-                        <tr class="hover:bg-gray-750 transition">
-                            <td class="p-3 font-bold text-pink-300">#{{ r.id }}</td>
-                            <td class="p-3">{{ r.nombre }}</td>
-                            <td class="p-3 text-gray-300">{{ r.paquete }}</td>
-                            <td class="p-3 text-center">
-                                <form action="/admin/eliminar/pilates/{{ r.id }}" method="post">
-                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition">Liberar</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="4" class="p-4 text-center text-gray-400">No hay reservas de pilates activas.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <!-- SECCIÓN: RESERVAS DE PILATES -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4 text-pink-300">🧘‍♀️ Reservas de Pilates</h2>
+            <div class="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-700 text-gray-400 bg-gray-800/80 text-sm">
+                                <th class="py-3 px-4">Lugar / Info</th>
+                                <th class="py-3 px-4">Nombre</th>
+                                <th class="py-3 px-4">Teléfono</th>
+                                <th class="py-3 px-4">Modalidad</th>
+                                <th class="py-3 px-4">Clase ID</th>
+                                <th class="py-3 px-4">Fecha de Registro</th>
+                                <th class="py-3 px-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800 text-sm">
+                            {% for reserva in pilates %}
+                            <tr class="hover:bg-gray-800/40 transition">
+                                <td class="py-3 px-4 text-pink-400 font-semibold">{{ reserva.bicicleta }}</td>
+                                <td class="py-3 px-4">{{ reserva.nombre }}</td>
+                                <td class="py-3 px-4">{{ reserva.telefono }}</td>
+                                <td class="py-3 px-4">{{ reserva.modalidad }}</td>
+                                <td class="py-3 px-4">{{ reserva.clase_id }}</td>
+                                <td class="py-3 px-4 text-gray-400">{{ reserva.created_at }}</td>
+                                <td class="py-3 px-4 text-center">
+                                    <form action="/admin/eliminar/pilates/{{ reserva.id }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium transition shadow">
+                                            Liberar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="py-6 text-center text-gray-500">No hay reservas registradas en Pilates.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
+
     </div>
 </body>
 </html>
