@@ -11,6 +11,16 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+
+BASE_DIR = Path(__file__).resolve().parent
+
+app = FastAPI(
+    title="Spinning & Pilates Galaxy Room",
+    description="Sistema de reservas para Spinning y Pilates"
+)
+# Servir archivos estáticos
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
 # ==========================================
 # NUEVAS RUTAS PARA EL PANEL DE ADMINISTRACIÓN
 # ==========================================
@@ -38,16 +48,6 @@ def eliminar_reserva(tipo: str, id: int):
     tabla = "reservas_spinning" if tipo == "spinning" else "reservas_pilates"
     supabase.table(tabla).delete().eq("id", id).execute()
     return RedirectResponse(url="/admin/galaxy", status_code=303)
-
-
-BASE_DIR = Path(__file__).resolve().parent
-
-app = FastAPI(
-    title="Spinning & Pilates Galaxy Room",
-    description="Sistema de reservas para Spinning y Pilates"
-)
-# Servir archivos estáticos
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # --- CONFIGURACIÓN DE SUPABASE ---
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pjatimqcgmnsnkmjspqi.supabase.co")
