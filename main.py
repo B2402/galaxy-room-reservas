@@ -38,11 +38,16 @@ def ver_panel_admin(request: Request):
         pilates_data = supabase.table("reservas_pilates").select("*").execute()
         reservas_pilates = pilates_data.data if pilates_data.data else []
 
-        return templates.TemplateResponse("admin.html", {
+        context = {
             "request": request,
             "spinning": reservas_spinning,
             "pilates": reservas_pilates
-        })
+        }
+        return templates.TemplateResponse("admin.html", context)
+        
+    except Exception as e:
+        return HTMLResponse(content=f"<h3>Ocurrió un error en el servidor:</h3><pre>{str(e)}</pre>", status_code=500)
+        
     except Exception as e:
         # Esto mostrará el error exacto en la pantalla en lugar de un genérico 500
         return HTMLResponse(content=f"<h3>Ocurrió un error en el servidor:</h3><pre>{str(e)}</pre>", status_code=500)
