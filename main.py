@@ -11,7 +11,6 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-templates = Jinja2Templates(directory="templates")
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -19,6 +18,7 @@ app = FastAPI(
     title="Spinning & Pilates Galaxy Room",
     description="Sistema de reservas para Spinning y Pilates"
 )
+templates = Jinja2Templates(directory="templates")
 
 # Servir archivos estáticos
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
