@@ -66,7 +66,7 @@
             </div>
         </section>
 
-        <!-- SECCIÓN: RESERVAS DE PILATES -->
+      <!-- SECCIÓN: RESERVAS DE PILATES -->
         <section class="mb-12">
             <h2 class="text-2xl font-semibold mb-4 text-pink-300">🧘‍♀️ Reservas de Pilates</h2>
             <div class="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
@@ -74,11 +74,10 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-gray-700 text-gray-400 bg-gray-800/80 text-sm">
-                                <th class="py-3 px-4">Lugar / Info</th>
+                                <th class="py-3 px-4">Cama</th>
                                 <th class="py-3 px-4">Nombre</th>
                                 <th class="py-3 px-4">Teléfono</th>
-                                <th class="py-3 px-4">Modalidad</th>
-                                <th class="py-3 px-4">Clase ID</th>
+                                <th class="py-3 px-4">Paquete</th>
                                 <th class="py-3 px-4">Fecha de Registro</th>
                                 <th class="py-3 px-4 text-center">Acciones</th>
                             </tr>
@@ -86,11 +85,10 @@
                         <tbody class="divide-y divide-gray-800 text-sm">
                             {% for reserva in pilates %}
                             <tr class="hover:bg-gray-800/40 transition">
-                                <td class="py-3 px-4 text-pink-400 font-semibold">{{ reserva.bicicleta }}</td>
+                                <td class="py-3 px-4 text-pink-400 font-semibold">{{ reserva.cama }}</td>
                                 <td class="py-3 px-4">{{ reserva.nombre }}</td>
                                 <td class="py-3 px-4">{{ reserva.telefono }}</td>
-                                <td class="py-3 px-4">{{ reserva.modalidad }}</td>
-                                <td class="py-3 px-4">{{ reserva.clase_id }}</td>
+                                <td class="py-3 px-4">{{ reserva.paquete }}</td>
                                 <td class="py-3 px-4 text-gray-400">{{ reserva.created_at }}</td>
                                 <td class="py-3 px-4 text-center">
                                     <form action="/admin/eliminar/pilates/{{ reserva.id }}" method="POST" style="display:inline;">
@@ -102,15 +100,11 @@
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="7" class="py-6 text-center text-gray-500">No hay reservas registradas en Pilates.</td>
+                                <td colspan="6" class="py-6 text-center text-gray-500">No hay reservas registradas en Pilates.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
-        </section>
-
-    </div>
-</body>
-</html>
+        </section> 
