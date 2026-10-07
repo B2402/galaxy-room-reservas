@@ -11,6 +11,8 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+templates = Jinja2Templates(directory="templates")
+
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
@@ -250,8 +252,6 @@ async def obtener_clases():
     # ==========================================
 # NUEVAS RUTAS PARA EL PANEL DE ADMINISTRACIÓN
 # ==========================================
-
-templates = Jinja2Templates(directory="templates")
 
 @app.get("/admin/galaxy", response_class=HTMLResponse)
 def ver_panel_admin(request: Request):
