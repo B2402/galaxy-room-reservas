@@ -7,6 +7,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 from supabase import create_client, Client
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -244,6 +247,33 @@ async def obtener_clases():
         {"id": 14, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Just Ride", "coach": "Mayra"},
         {"id": 15, "dia": "Viernes", "hora": "06:15 PM", "modalidad": "2'000", "coach": "Mayra"}
     ]
+    # ==========================================
+# NUEVAS RUTAS PARA EL PANEL DE ADMINISTRACIÓN
+# ==========================================
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/admin/galaxy", response_class=HTMLResponse)
+def ver_panel_admin(request: Request):
+    # Consultar reservas de Spinning
+    spinning_data = supabase.table("reservas_spinning").select("*").execute()
+    reservas_spinning = spinning_data.data if spinning_data.data else []
+
+    # Consultar reservas de Pilates
+    pilates_data = supabase.table("reservas_pilates").select("*").execute()
+    reservas_pilates = pilates_data.data if pilates_data.data else []
+
+    return templates.TemplateResponse("admin.html", {
+        "request": request,
+        "spinning": reservas_spinning,
+        "pilates": reservas_pilates
+    })
+
+@app.post("/admin/eliminar/{tipo}/{id}")
+def eliminar_reserva(tipo: str, id: int):
+    tabla = "reservas_spinning" if tipo == "spinning" else "reservas_pilates"
+    supabase.table(tabla).delete().eq("id", id).execute()
+    return RedirectResponse(url="/admin/galaxy", status_code=303)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
