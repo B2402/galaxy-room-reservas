@@ -52,34 +52,6 @@ class ReservaPilatesSchema(BaseModel):
 async def read_index():
     return FileResponse(BASE_DIR / "templates" / "index.html")
 
-# ==========================================
-# NUEVAS RUTAS PARA EL PANEL DE ADMINISTRACIÓN
-# ==========================================
-
-templates = Jinja2Templates(directory="templates")
-
-@app.get("/admin/galaxy", response_class=HTMLResponse)
-def ver_panel_admin(request: Request):
-    # Consultar reservas de Spinning
-    spinning_data = supabase.table("reservas_spinning").select("*").execute()
-    reservas_spinning = spinning_data.data if spinning_data.data else []
-
-    # Consultar reservas de Pilates
-    pilates_data = supabase.table("reservas_pilates").select("*").execute()
-    reservas_pilates = pilates_data.data if pilates_data.data else []
-
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
-        "spinning": reservas_spinning,
-        "pilates": reservas_pilates
-    })
-
-@app.post("/admin/eliminar/{tipo}/{id}")
-def eliminar_reserva(tipo: str, id: int):
-    tabla = "reservas_spinning" if tipo == "spinning" else "reservas_pilates"
-    supabase.table(tabla).delete().eq("id", id).execute()
-    return RedirectResponse(url="/admin/galaxy", status_code=303)
-
 # --- ENDPOINTS SPINNING ---
 
 @app.get("/api/reservas/{clase_id}")
