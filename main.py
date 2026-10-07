@@ -29,19 +29,23 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/admin/galaxy", response_class=HTMLResponse)
 def ver_panel_admin(request: Request):
-    # Consultar reservas de Spinning
-    spinning_data = supabase.table("reservas_spinning").select("*").execute()
-    reservas_spinning = spinning_data.data if spinning_data.data else []
+    try:
+        # Consultar reservas de Spinning
+        spinning_data = supabase.table("reservas_spinning").select("*").execute()
+        reservas_spinning = spinning_data.data if spinning_data.data else []
 
-    # Consultar reservas de Pilates
-    pilates_data = supabase.table("reservas_pilates").select("*").execute()
-    reservas_pilates = pilates_data.data if pilates_data.data else []
+        # Consultar reservas de Pilates
+        pilates_data = supabase.table("reservas_pilates").select("*").execute()
+        reservas_pilates = pilates_data.data if pilates_data.data else []
 
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
-        "spinning": reservas_spinning,
-        "pilates": reservas_pilates
-    })
+        return templates.TemplateResponse("admin.html", {
+            "request": request,
+            "spinning": reservas_spinning,
+            "pilates": reservas_pilates
+        })
+    except Exception as e:
+        # Esto mostrará el error exacto en la pantalla en lugar de un genérico 500
+        return HTMLResponse(content=f"<h3>Ocurrió un error en el servidor:</h3><pre>{str(e)}</pre>", status_code=500)
 
 @app.post("/admin/eliminar/{tipo}/{id}")
 def eliminar_reserva(tipo: str, id: int):
