@@ -21,22 +21,61 @@ app = FastAPI(
 # Servir archivos estáticos
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
+# --- CONFIGURACIÓN DE SUPABASE ---
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pjatimqcgmnsnkmjspqi.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_KqE4UPVn2JYKnAudq6RV2w_GwhJj_vu")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 # ==========================================
-# NUEVAS RUTAS PARA EL PANEL DE ADMINISTRACIÓN
+# PANEL DE ADMINISTRACIÓN
 # ==========================================
 
 templates = Jinja2Templates(directory="templates")
 
+# Lista fija de clases para traducir el ID al texto legible que necesita tu tía
+LISTA_CLASES_ADMIN = [
+    {"id": 1, "dia": "Lunes", "hora": "07:00 AM", "modalidad": "FLOW", "coach": "Coquis"},
+    {"id": 2, "dia": "Lunes", "hora": "05:15 PM", "modalidad": "Principiantes", "coach": ""},
+    {"id": 3, "dia": "Lunes", "hora": "06:15 PM", "modalidad": "FLOW", "coach": "Mayra"},
+    {"id": 4, "dia": "Lunes", "hora": "07:15 PM", "modalidad": "FLOW", "coach": "Mario"},
+    {"id": 5, "dia": "Martes", "hora": "07:00 AM", "modalidad": "Montaña", "coach": "Coquis"},
+    {"id": 6, "dia": "Martes", "hora": "05:15 PM", "modalidad": "Principiantes", "coach": ""},
+    {"id": 7, "dia": "Martes", "hora": "06:15 PM", "modalidad": "Montaña", "coach": "Tere Vega"},
+    {"id": 8, "dia": "Martes", "hora": "07:15 PM", "modalidad": "Montaña", "coach": "Mayra"},
+    {"id": 9, "dia": "Miércoles", "hora": "06:15 PM", "modalidad": "Gruperas", "coach": "Mayra"},
+    {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "Gruperas", "coach": "Omar Loeza"},
+    {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Just Ride", "coach": "Coquis"},
+    {"id": 12, "dia": "Jueves", "hora": "05:15 PM", "modalidad": "Principiantes", "coach": ""},
+    {"id": 13, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Just Ride", "coach": "Coquis"},
+    {"id": 14, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Just Ride", "coach": "Mayra"},
+    {"id": 15, "dia": "Viernes", "hora": "06:15 PM", "modalidad": "2'000", "coach": "Mayra"}
+]
+
 @app.get("/admin/galaxy", response_class=HTMLResponse)
 def ver_panel_admin(request: Request):
     try:
+        # Construir diccionario de mapeo dinámico a partir de las clases
+        clases_mapping = {}
+        for c in LISTA_CLASES_ADMIN:
+            coach_str = f" ({c['coach']})" if c['coach'] else ""
+            clases_mapping[str(c["id"])] = f"{c['dia']} - {c['hora']} | {c['modalidad']}{coach_str}"
+
         # Consultar reservas de Spinning
         spinning_data = supabase.table("reservas_spinning").select("*").execute()
         reservas_spinning = spinning_data.data if spinning_data.data else []
+        
+        for r in reservas_spinning:
+            c_id = str(r.get("clase_id", ""))
+            r["clase_texto"] = clases_mapping.get(c_id, f"Clase ID: {c_id}" if c_id else "Sin asignar")
 
         # Consultar reservas de Pilates
         pilates_data = supabase.table("reservas_pilates").select("*").execute()
         reservas_pilates = pilates_data.data if pilates_data.data else []
+        
+        for r in reservas_pilates:
+            # En pilates a veces usan clase_id o paquete, lo adaptamos de forma segura
+            c_id = str(r.get("clase_id", "")) if r.get("clase_id") else str(r.get("paquete", ""))
+            r["clase_texto"] = clases_mapping.get(c_id, f"Paquete/Clase: {c_id}" if c_id else "Sin asignar")
 
         return templates.TemplateResponse(
             request, 
@@ -49,18 +88,12 @@ def ver_panel_admin(request: Request):
         
     except Exception as e:
         return HTMLResponse(content=f"<h3>Ocurrió un error en el servidor:</h3><pre>{str(e)}</pre>", status_code=500)
-        return templates.TemplateResponse("admin.html", context)
 
 @app.post("/admin/eliminar/{tipo}/{id}")
 def eliminar_reserva(tipo: str, id: int):
     tabla = "reservas_spinning" if tipo == "spinning" else "reservas_pilates"
     supabase.table(tabla).delete().eq("id", id).execute()
     return RedirectResponse(url="/admin/galaxy", status_code=303)
-
-# --- CONFIGURACIÓN DE SUPABASE ---
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pjatimqcgmnsnkmjspqi.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_KqE4UPVn2JYKnAudq6RV2w_GwhJj_vu")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class ReservaSchema(BaseModel):
     clase_id: Optional[str] = "1"
@@ -130,7 +163,6 @@ async def registrar_reserva(reserva: ReservaSchema):
     clase_id = str(reserva.clase_id).strip()
     
     try:
-        # Validar si ya está ocupada en esa clase en Supabase
         existing = supabase.table("reservas_spinning")\
             .select("*")\
             .eq("clase_id", clase_id)\
@@ -140,7 +172,6 @@ async def registrar_reserva(reserva: ReservaSchema):
         if existing.data and len(existing.data) > 0:
             raise HTTPException(status_code=400, detail=f"La bicicleta #{bici_id} ya se encuentra reservada para esta clase.")
         
-        # Insertar registro
         data_to_insert = {
             "clase_id": clase_id,
             "bicicleta": bici_id,
@@ -185,12 +216,10 @@ async def cancelar_reserva(data: CancelarReservaSchema):
 async def reset_db():
     """Limpia las tablas de Supabase para pruebas."""
     try:
-        # Nota: Esto requiere que las tablas permitan el borrado masivo o se limpien por filas
         supabase.table("reservas_spinning").delete().neq("id", 0).execute()
         supabase.table("reservas_pilates").delete().neq("id", 0).execute()
         return {"status": "ok", "mensaje": "Base de datos en Supabase reiniciada."}
     except Exception as e:
-        # Método alternativo por si no usan columna id numérica
         try:
             supabase.table("reservas_spinning").delete().gte("bicicleta", "0").execute()
             supabase.table("reservas_pilates").delete().gte("telefono", "0").execute()
@@ -266,23 +295,7 @@ async def obtener_bicicletas():
 
 @app.get("/clases")
 async def obtener_clases():
-    return [
-        {"id": 1, "dia": "Lunes", "hora": "07:00 AM", "modalidad": "FLOW", "coach": "Coquis"},
-        {"id": 2, "dia": "Lunes", "hora": "05:15 PM", "modalidad": "Principiantes"},
-        {"id": 3, "dia": "Lunes", "hora": "06:15 PM", "modalidad": "FLOW", "coach": "Mayra"},
-        {"id": 4, "dia": "Lunes", "hora": "07:15 PM", "modalidad": "FLOW", "coach": "Mario"},
-        {"id": 5, "dia": "Martes", "hora": "07:00 AM", "modalidad": "Montaña", "coach": "Coquis"},
-        {"id": 6, "dia": "Martes", "hora": "05:15 PM", "modalidad": "Principiantes"},
-        {"id": 7, "dia": "Martes", "hora": "06:15 PM", "modalidad": "Montaña", "coach": "Tere Vega"},
-        {"id": 8, "dia": "Martes", "hora": "07:15 PM", "modalidad": "Montaña", "coach": "Mayra"},
-        {"id": 9, "dia": "Miércoles", "hora": "06:15 PM", "modalidad": "Gruperas", "coach": "Mayra"},
-        {"id": 10, "dia": "Miércoles", "hora": "07:15 PM", "modalidad": "Gruperas", "coach": "Omar Loeza"},
-        {"id": 11, "dia": "Jueves", "hora": "07:00 AM", "modalidad": "Just Ride", "coach": "Coquis"},
-        {"id": 12, "dia": "Jueves", "hora": "05:15 PM", "modalidad": "Principiantes"},
-        {"id": 13, "dia": "Jueves", "hora": "06:15 PM", "modalidad": "Just Ride", "coach": "Coquis"},
-        {"id": 14, "dia": "Jueves", "hora": "07:15 PM", "modalidad": "Just Ride", "coach": "Mayra"},
-        {"id": 15, "dia": "Viernes", "hora": "06:15 PM", "modalidad": "2'000", "coach": "Mayra"}
-    ]
+    return LISTA_CLASES_ADMIN
    
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
