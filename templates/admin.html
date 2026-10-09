@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Galaxy Room</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen p-6">
@@ -14,12 +13,87 @@
         <header class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
             <div>
                 <h1 class="text-3xl font-bold text-cyan-400">🌌 Panel de Administración</h1>
-                <p class="text-gray-400 text-sm mt-1">Control de reservas para supervisión general</p>
+                <p class="text-gray-400 text-sm mt-1">Gestión de reservas y control semanal de horarios</p>
             </div>
             <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-lg text-sm transition">
                 ← Volver al sitio
             </a>
         </header>
+
+        <!-- SECCIÓN: GESTIÓN DE CLASES Y HORARIOS -->
+        <section class="mb-12 bg-gray-800/40 p-6 rounded-xl border border-gray-700 shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-purple-300">📅 Gestión de Clases y Horarios (Actualizar cada semana)</h2>
+            
+            <!-- Formulario para agregar nueva clase -->
+            <form action="/admin/clases/agregar" method="POST" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 bg-gray-800/80 p-4 rounded-lg border border-gray-700">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Día</label>
+                    <select name="dia" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm text-white">
+                        <option value="Lunes">Lunes</option>
+                        <option value="Martes">Martes</option>
+                        <option value="Miércoles">Miércoles</option>
+                        <option value="Jueves">Jueves</option>
+                        <option value="Viernes">Viernes</option>
+                        <option value="Sábado">Sábado</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Hora</label>
+                    <input type="text" name="hora" placeholder="Ej: 07:00 AM" required class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Modalidad</label>
+                    <input type="text" name="modalidad" placeholder="Ej: FLOW / Montaña" required class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Coach (Opcional)</label>
+                    <input type="text" name="coach" placeholder="Ej: Coquis" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm text-white">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded text-sm transition shadow">
+                        + Agregar Clase
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tabla de clases actuales -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400 bg-gray-800/80 text-sm">
+                            <th class="py-2 px-4">ID</th>
+                            <th class="py-2 px-4">Día</th>
+                            <th class="py-2 px-4">Hora</th>
+                            <th class="py-2 px-4">Modalidad</th>
+                            <th class="py-2 px-4">Coach</th>
+                            <th class="py-2 px-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800 text-sm">
+                        {% for c in clases %}
+                        <tr class="hover:bg-gray-800/40 transition">
+                            <td class="py-2 px-4 text-gray-400">{{ c.id }}</td>
+                            <td class="py-2 px-4 font-semibold text-purple-300">{{ c.dia }}</td>
+                            <td class="py-2 px-4">{{ c.hora }}</td>
+                            <td class="py-2 px-4">{{ c.modalidad }}</td>
+                            <td class="py-2 px-4">{{ c.coach if c.coach else '—' }}</td>
+                            <td class="py-2 px-4 text-center">
+                                <form action="/admin/clases/eliminar/{{ c.id }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar esta clase?');">
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="py-4 text-center text-gray-500">No hay clases configuradas.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         <!-- SECCIÓN: RESERVAS DE SPINNING -->
         <section class="mb-12">
