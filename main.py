@@ -267,5 +267,19 @@ async def obtener_clases():
     except Exception as e:
         return []
 
+@app.post("/admin/reservas/reset")
+def reset_reservas_admin():
+    try:
+        supabase.table("reservas_spinning").delete().neq("id", 0).execute()
+        supabase.table("reservas_pilates").delete().neq("id", 0).execute()
+        return RedirectResponse(url="/admin/galaxy", status_code=303)
+    except Exception as e:
+        try:
+            supabase.table("reservas_spinning").delete().gte("bicicleta", "0").execute()
+            supabase.table("reservas_pilates").delete().gte("telefono", "0").execute()
+            return RedirectResponse(url="/admin/galaxy", status_code=303)
+        except Exception as err:
+            raise HTTPException(status_code=500, detail=f"No se pudo vaciar la base de datos: {str(err)}")
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
