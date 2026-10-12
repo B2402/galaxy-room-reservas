@@ -89,25 +89,29 @@ def agregar_clase(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al agregar clase: {str(e)}")
 
-@app.post("/admin/clases/editar/{id}")
-def editar_clase(
-    id: int,
-    dia: str = Form(...),
-    hora: str = Form(...),
-    modalidad: str = Form(...),
-    coach: Optional[str] = Form("")
-):
+class ClaseUpdateSchema(BaseModel):
+    id: int
+    dia: str
+    hora: str
+    modalidad: str
+    coach: Optional[str] = ""
+
+class LoteClasesSchema(BaseModel):
+    clases: List[ClaseUpdateSchema]
+
+@app.post("/admin/clases/actualizar-lote")
+def actualizar_lote_clases(data: LoteClasesSchema):
     try:
-        datos_actualizados = {
-            "dia": dia,
-            "hora": hora,
-            "modalidad": modalidad,
-            "coach": coach
-        }
-        supabase.table("clases").update(datos_actualizados).eq("id", id).execute()
-        return RedirectResponse(url="/admin/galaxy", status_code=303)
+        for item in data.clases:
+            supabase.table("clases").update({
+                "dia": item.dia,
+                "hora": item.hora,
+                "modalidad": item.modalidad,
+                "coach": item.coach
+            }).eq("id", item.id).execute()
+        return {"status": "ok", "mensaje": "Clases actualizadas correctamente"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al actualizar clase: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar lote: {str(e)}")
 
 @app.post("/admin/clases/eliminar/{id}")
 def eliminar_clase(id: int):
