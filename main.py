@@ -89,6 +89,26 @@ def agregar_clase(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al agregar clase: {str(e)}")
 
+@app.post("/admin/clases/editar/{id}")
+def editar_clase(
+    id: int,
+    dia: str = Form(...),
+    hora: str = Form(...),
+    modalidad: str = Form(...),
+    coach: Optional[str] = Form("")
+):
+    try:
+        datos_actualizados = {
+            "dia": dia,
+            "hora": hora,
+            "modalidad": modalidad,
+            "coach": coach
+        }
+        supabase.table("clases").update(datos_actualizados).eq("id", id).execute()
+        return RedirectResponse(url="/admin/galaxy", status_code=303)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar clase: {str(e)}")
+
 @app.post("/admin/clases/eliminar/{id}")
 def eliminar_clase(id: int):
     try:
@@ -237,7 +257,6 @@ async def obtener_bicicletas():
 
 @app.get("/clases")
 async def obtener_clases():
-    """Devuelve las clases activas directamente desde Supabase para la app principal."""
     try:
         response = supabase.table("clases").select("*").order("id").execute()
         return response.data if response.data else []
